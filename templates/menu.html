@@ -1,0 +1,103 @@
+<html>
+<head>
+  <title>Bootstrap Navigation Bar</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script src="static/jquery-3.4.1.min.js"></script>
+    
+  <style>
+       body{ 
+            /* padding: 70px;  */
+           position:relative;
+       }
+       input{
+        width:40px;
+		text-align:center;
+       }
+    </style>
+	<script>
+
+
+
+
+	$(document).ready(function(){
+		var check = 0;
+
+		document.querySelector("button").addEventListener('click',function(){
+			if(check == 1){
+				document.querySelector('.collapse').className = "navbar-collapse collapse in";
+				$(".collapse").slideUp();
+				check = 0;
+			}else{
+				
+				$(".collapse").slideDown();
+				check = 1;
+			}
+
+				
+
+		});
+		
+		document.querySelector("#song").addEventListener('click',function(){
+			var loc = location.href.split('?')[0];
+            var dir = location.href.split('?')[1].split('&')[0];
+            var vi = $('#H').val();
+            var vj = $('#W').val();
+            var vn = $('#floor').val();
+			var stlink = loc+'?'+dir+'&i='+vi+'&j='+vj+'&n='+vn;
+			location.href=stlink;
+            console.log(stlink);
+
+				
+
+		});
+			
+
+			
+				document.querySelector('.collapse').className = "collapse navbar-collapse";
+
+			
+		
+
+		})
+	
+
+		
+	</script>
+	<script src="static/bootstrap.min.js"></script>
+    <link href="static/bootstrap.css" rel="stylesheet">
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+</head>
+<body  data-target="#navbar-spy" data-spy="scroll" >
+<div>
+    <nav class="nav navbar-default navbar-fixed-top" id="navbar-spy" style="background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);">
+        <div class="container-fluid" style="background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" id="push_button"  data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span> 
+                </button>
+                <a class="navbar-brand" id="song" href="#">Brand</a>
+                <a class="navbar-brand">高<input id="H" value="10"  /></a>
+                <a class="navbar-brand">寬<input id="W" value="5" /></a>
+                <a class="navbar-brand"><input id="floor" value="0" />樓</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar" style="background-color:white;overflow-y:scroll">
+			
+                <ul class="nav navbar-nav" style="background-color:white;">
+                    <li class="dropdown"><a  href="/search?" style="background-image: linear-gradient(to top, #FF7575	, #FFB5B5	);" >圖片查詢</a><br/></li>
+                    <li class="dropdown"><a  href="/upload"  style="background-image: linear-gradient(to top, #FF7575	, #FFB5B5	); ">圖片上傳</a><br/></li>
+
+					{% for i in dir %}
+						<li class="dropdown"><a  href="/show?dir={{i}}&i=100&j=1&n=0" >{{i}}</a><br/></li>
+							
+					{% endfor %}
+                </ul>
+				
+            </div>
+        </div>
+    </nav>    
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<html>
+<head>
+
+ <style>
+	 #dil{
+	 	font-size:5vmin;
+	 }
+	 td{
+	 	font-size:5vmin;
+	 	border:0px solid;
+	 	padding:5px;
+	 	text-align:center;
+		 background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+	 }
+	 table{
+   	border-collapse: collapse;
+   	width: 770px; 	
+   	/*自動斷行*/
+   	word-wrap: break-word;
+   	table-layout: fixed;
+   }
+   body{
+	background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+
+   }
+
+ </style>
+
+</head>
+	<body onload="getUrlC()">
+		<br/>
+		<h1 style="text-align:center ;">我的網路相簿</h1>
+		<br/>
+	<div class="dik">
+		<table class="nav navbar-nav" style="position:absolute;left:5%;width:90%;">
+
+			{% for i in dir %}
+				<tr>
+					<td style="text-align:center ;">
+						
+						<a href="/show?dir={{i}}&i=100&j=1&n=0" >
+							<img src="static/files.png" style="width: 20%;height:auto;position:relative;left:0%;" >
+                                <br/>
+								{{i}}
+						</a><br/>
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+	</body>
+
+</html>

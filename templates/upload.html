@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="static/bootstrap.min.css"/>
+	<script type="text/javascript" src="static/jquery-3.4.1.min.js"></script>
+	<script type="text/javascript" src="static/bootstrap.min.js"></script>
+
+        <script>
+            function Choose(number){
+                var choose=document.getElementById("folder").innerHTML;
+                var nun = document.getElementById('folder').length-1;
+                if(number==nun)
+                {
+                  document.getElementById("foldername").type="text";
+                }else{
+                  document.getElementById("foldername").type="hidden";
+                }
+            }
+            function funs(){
+              var d = document.getElementById('updfiles').files.length;
+              imgs.innerHTML = "&nbsp;&nbsp;&nbsp;已選擇"+d+"個檔案";
+              console.log(d);
+            }
+            function getUrlC(){
+              $("#menu_bar").load("php_demo");
+            }
+            function check(){
+              var d = document.getElementById('updfiles').files.length;
+              if(parseInt(d) == 0){
+                imgs.innerHTML = "&nbsp;&nbsp;&nbsp;尚未選擇檔案";
+                return false;
+              }else{
+                return true;
+              }
+            }
+            
+        </script>
+        <style>
+          body{	background-image: linear-gradient(to top, #c5b2b2	, #c28aa6	);
+}
+          .updf{
+            position: absolute;
+            width: 100%;
+            left: 0%;
+            border: 1px silver solid;
+            border-radius: 25px;
+            padding: 0px;
+
+          }
+           #upd_tb{
+            margin: 0;
+            margin-left: auto;
+            margin-right: auto;
+            width:100%;
+            left: 0%;
+            position: relative;
+           
+           }
+           #upd_tb td{
+            border: 0px silver solid;
+            padding: 20px;
+            font-size: 4vmin;
+            
+           }
+           .btn{
+            font-size: 4vmin;
+           }
+           #foldername{
+              width: 50%;
+
+           }
+
+
+        </style>
+    </head>
+
+    <body onload="getUrlC()">
+      <!-- <form method="POST" enctype="multipart/form-data" action="/" > 
+            <input type="file" name="filename" accept="image/* video/*" required multiple >
+            <input type="submit" value="上傳" >
+        </form> -->
+        <div id="menu_bar" style="position:fixed;z-index:111;background-color:white;">
+
+
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <div class="updf">
+          <table id="upd_tb">
+            <!-- <tr><td><span>{{alert}}</span></td></tr> -->
+            <tr><td style="border-top-left-radius: 25px;border-top-right-radius: 25px; background-image: linear-gradient(to top, #FFC78E		, #FFA042	);">選擇檔案</td></tr>
+          <form action="" enctype='multipart/form-data' method='POST'>
+            <tr><td>
+              
+<label class="btn btn-info" onchange="funs()">
+              <input type="file" name="file[]" id="updfiles" style="display:none;" accept=".jpg,.jpeg,.png,.jfif,.HEIC,.mp4,.wmv,.flv,.mov,.avi" multiple>
+              <i class="fa fa-photo"></i> 上傳圖片
+</label><span id="imgs"></span>
+            </td>
+            <tr><td style="background-image: linear-gradient(to top, #ADFEDC, #4EFEB3	);">
+                  選擇儲存的資料夾<br/><br/>
+                  <select id="folder" name=folder onchange="Choose(this.value)">
+                    {% for dir in dirs %}
+                      <option value={{dirs.index(dir)}}>{{dir}}</option>
+                    {% endfor %}
+                  </select>
+            </td></tr>
+            <tr><td><input type="hidden" id="foldername" name="foldername" value=""></td></tr>
+            <tr><td>
+              <label class="btn btn-info">
+              <input type="submit" style="display: none;" onclick="return check()" value="上傳至電腦" name="upload">
+              <i class="fa fa-photo"></i> 上傳至電腦
+            </label>
+            </td></tr>
+          </form>
+        </table>
+        </div>
+       
+        
+    </body>
+</html>

@@ -1,0 +1,130 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="static/bootstrap.min.css"/>
+	<script type="text/javascript" src="static/jquery-3.4.1.min.js"></script>
+	<script type="text/javascript" src="static/bootstrap.min.js"></script>
+
+        <script>
+            function Choose(number){
+                var choose=document.getElementById("folder").innerHTML;
+                var nun = document.getElementById('folder').length-1;
+                if(number==nun)
+                {
+                  document.getElementById("foldername").type="text";
+                }else{
+                  document.getElementById("foldername").type="hidden";
+                }
+            }
+            function funs(){
+              var d = document.getElementById('updfiles').files.length;
+              imgs.innerHTML = "&nbsp;&nbsp;&nbsp;已選擇"+d+"個檔案";
+              console.log(d);
+            }
+            function getUrlC(){
+		      $("#menu_bar").load("php_demo");
+			  let urlParams = new URLSearchParams(window.location.search);
+			
+			  if(urlParams.get('co') == "ig"){
+				$('#logo').attr('src',"static/Instagram.png")  ;
+				$('#num').hide();
+			  }
+				
+			else{
+				$('#logo').attr('src',"static/google.png") ; 
+				}
+        }
+            
+        </script>
+        <style>
+          .updf{
+            position: absolute;
+            width: 100%;
+            left: 0%;
+            border: 0px silver solid;
+            border-radius: 25px;
+            padding: 5px;
+
+          }
+           #upd_tb{
+            margin: 0;
+            margin-left: auto;
+            margin-right: auto;
+            width:100%;
+            left: 0%;
+            position: relative;
+           
+           }
+           #upd_tb td{
+            border: 0px silver solid;
+            padding: 20px;
+            font-size: 4vmin;
+            
+           }
+           .btn{
+            font-size: 4vmin;
+           }
+           #foldername{
+              width: 50%;
+
+           }
+
+           .search_part:hover
+           {
+                color:lightblue;
+                box-shadow: 0 0 5px 5px lightblue;
+
+           }
+
+        </style>
+    </head>
+
+    <body onload="getUrlC()">
+      <!-- <form method="POST" enctype="multipart/form-data" action="/" > 
+            <input type="file" name="filename" accept="image/* video/*" required multiple >
+            <input type="submit" value="上傳" >
+        </form> -->
+        <div id="menu_bar" style="position:fixed;z-index:111;background-color:white;">
+
+
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+
+        <div class="updf">
+          <table id="upd_tb">
+           
+            <tr><td style="text-align:center">
+                <span>
+                    <img id="logo" style="width:40vh" >
+
+                </span>
+            </td></tr>
+          <form action="" enctype='multipart/form-data' method='POST'>
+            <tr><td style="text-align:center">
+                <div class="search_part" style="border-radius:50px;border: 1px lightgrey solid;width: 90%;left:5%;position: relative;">
+                    <input type="text" style="font-size: 4vmin;width: 80%;height:50px;border: 0px lightgrey solid;outline: none;" name="keyword">
+
+                </div>
+            </td>
+            <tr><td style="text-align:center">
+                <div class="search_part" style="border-radius:40px;border: 1px lightgrey solid;width: 40%;left:30%;position: relative;">
+                    <input type="text" id="num" placeholder="填入下載數量" style="font-size: 3vmin;width: 60%;height:40px;border: 0px lightgrey solid;outline: none;" name="num" value="">
+                </div>
+            </td></tr>
+            <tr><td style="text-align:center">
+              <label class="btn btn-info">
+              <input type="submit" style="display: none;" value="上傳至電腦" name="download">
+              <i class="fa fa-photo"></i> Google搜尋
+            </label>
+            </td></tr>
+          </form>
+        </table>
+        </div>
+       
+        
+    </body>
+</html>

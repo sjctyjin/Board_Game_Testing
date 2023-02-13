@@ -1,0 +1,235 @@
+<html>
+<head>
+
+
+        <script src="static/jquery-3.4.1.min.js"></script>
+
+    <script>
+ $(function () {
+
+    // show hide subnav depending on scroll direction
+    var position = $(window).scrollTop();
+
+    $(window).scroll(function () {
+        var scroll = $(window).scrollTop();
+
+        if (scroll < position) {
+
+            //only piece that matters
+            $('nav')
+            	.stop(true, false)
+                .removeClass('up')
+                .addClass('down');
+
+
+            // scrolling downwards, only here for dev purposes
+            console.log('moving DOWN the page');
+            $('input').val('down');
+
+        } else {
+            //only piece that matters
+            $('nav')
+                .stop(true, false)
+                .removeClass('down')
+                .addClass('up');
+
+
+            // scrolling upwards 
+            console.log('moving UP the page');
+            $('input').val('up');
+        }
+
+        position = scroll;
+    });
+
+});
+
+        function getUrlF(){
+            let urlParams = new URLSearchParams(window.location.search);
+            loc = location.href.split('?')[0];
+
+            a = urlParams.get('id');
+            var num = parseInt(a)+1;
+
+            console.log(urlParams);
+            console.log(a);
+            console.log(num);
+            window.location.href=loc+'?id='+num;
+
+        }
+
+        function getUrlB(){
+            let urlParams = new URLSearchParams(window.location.search);
+            loc = location.href.split('?')[0];
+
+            a = urlParams.get('id');
+            if(parseInt(a) > 1){
+                var num = parseInt(a)-1;
+            }else
+            {
+             var num = 1;
+            }
+
+
+            console.log(urlParams);
+            console.log(a);
+            console.log(num);
+            window.location.href=loc+'?id='+num;
+
+        }
+
+
+
+        function getUrlC(){
+		$("#menu_bar").load("php_demo");
+            $('#postbord td img').click(function() {
+                $('.imgshow').show();
+                $('#imshowb')[0].src = this.attributes.src.nodeValue;
+                console.log(this.attributes.src.nodeValue);
+            });
+
+            $('.imgshow').click(function() {
+                $('.imgshow').hide();
+            });
+            $('.imgshow').click(function() {
+                $('.imgshow').hide();
+            });
+			
+				
+	
+        }
+
+
+
+
+
+
+
+
+    </script>
+
+    <style>
+            body,html{
+                height:100%;
+                margin:0;
+                overflow-y:auto;
+            }
+           @media only screen and (min-width: 600px) {
+              #dik {
+
+                text-align:center;
+                position:relative;
+                width:100%;
+                left:0%;
+                 height:100%;
+
+              }
+            }
+
+            @media only screen and (min-width: 1200px) {
+              #dik {
+
+                text-align:center;
+                position:relative;
+                width:90%;
+                left:5%;
+                height:100%;
+
+              }
+            }
+            td{
+                padding:5px;
+            }
+
+            .imgshow{
+                overflow-y:auto;
+            }
+			
+			
+			
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  nav {
+    position: fixed;
+    top: 0em;
+    width: 100%;
+    background: #384072;
+    h1 {
+      text-align:center;
+      padding:1em 0;
+      color:white;
+      font-weight:100;
+    }
+  }
+  
+  .box {
+    width: 100%;
+    height: 200vh;
+  }
+  
+  .down {
+    height: 0;
+    overflow: hidden;
+    transition: all 400ms;
+  }
+  
+  .up {
+    transition: all 400ms;
+    height: 5em;
+  }
+			
+			
+			
+			
+			
+			
+    </style>
+
+
+</head>
+<body onload="getUrlC()">
+<nav>
+</nav>
+    <div class="box">
+	
+	<div id="menu_bar" style="position:fixed;z-index:111;background-color:white;">
+
+
+	</div>
+
+    <div class="dik">
+            <table id="postbord" border="1" cellpadding="0" cellspacing="0" style="width:100%;position:absolute;">
+            {% for i in var_i %}
+                <tr>
+                    {% for j in var_j %}
+                        <td width="50"><img class="pd2" src="{{imgs[((i*varj)+j+num)]}}" style="width:100%;height:auto;position:relative;top:0px;"></td> 
+
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </table>
+        <div class="imgshow" style="position:fixed;width:100%;left:0%;top:10vh;display:none;;">
+			<img id="imshowb" src="" style="width:100%;height:auto;position:relative;top:0px;" alt="一張圖片"><br/>
+
+			</div>
+    </div>
+	</div>
+	
+
+
+
+</body>
+
+
+<footer>
+<!--    <br/>-->
+<!--    <br/>-->
+<!--    <button onclick="getUrlB()" style="height:200px;position:absolute;width:50%;left:0%;margin-left:0px;bottom:0px"> ＜＜ </button>-->
+<!--<button onclick="getUrlF()" style="height:200px;position:absolute;width:50%;right:0%;margin-right:0px;bottom:0px"> ＞＞ </button><br/>-->
+<!--    <br/>-->
+</footer>
+</html>

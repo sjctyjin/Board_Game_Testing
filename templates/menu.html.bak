@@ -1,0 +1,105 @@
+<html>
+<head>
+  <title>Bootstrap Navigation Bar</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script src="static/jquery-3.4.1.min.js"></script>
+    
+  <style>
+       body{ 
+           <!-- padding: 70px; -->
+           position:relative;
+       }
+    </style>
+	<script>
+	$(document).ready(function(){
+	var check = 0;
+	<!-- $(".collapse").hide(); -->
+		<!-- document.getElementById('push_button').addEventListener('click',function(){alert('123')}); -->
+	document.querySelector("button").addEventListener('click',function(){
+		if(check == 1){
+		    document.querySelector('.collapse').className = "navbar-collapse collapse in";
+			$(".collapse").slideUp();
+			check = 0;
+		}else{
+			
+			$(".collapse").slideDown();
+			check = 1;
+		}
+		<!-- if(document.querySelector('.collapse').className == 'navbar-collapse collapse in'){ -->
+		<!-- console.log('fuck'); -->
+		<!-- document.querySelector('.collapse').className = "collapse navbar-collapse"; -->
+			<!-- $(".collapse").slideUp(); -->
+			
+		<!-- } -->
+		<!-- else if(document.querySelector('.collapse').className == 'collapse navbar-collapse'){ -->
+		<!-- console.log('fuck'); -->
+			<!-- $(".collapse").css("display","none"); -->
+			<!-- document.querySelector('.collapse').className = "navbar-collapse collapse in"; -->
+			<!-- $(".collapse").slideDown(); -->
+		<!-- }; -->
+	});
+		
+		document.querySelector("ul").addEventListener('click',function(){
+		
+		    <!-- document.querySelector('.collapse').className = "collapse navbar-collapse"; -->
+			$(".collapse").slideUp();
+			check = 1;
+		})
+		
+	
+
+	})
+	
+	
+function trans(event){
+	
+	console.log(event.innerHTML);
+	if(event.innerHTML == "3D建模作品"){
+		document.querySelector("#menu3").className = "fade";
+	}else{
+		document.querySelector("#menu3").className = "tab-pane fade";
+	}
+	console.log(document.querySelector("#menu3").className);
+		
+	
+	
+	}
+		
+	</script>
+	<script src="static/bootstrap.min.js"></script>
+    <link href="static/bootstrap.css" rel="stylesheet">
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+</head>
+<body  data-target="#navbar-spy" data-spy="scroll" >
+<div>
+    <nav class="nav navbar-default navbar-fixed-top" id="navbar-spy">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" id="push_button"  data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span> 
+                </button>
+                <a class="navbar-brand" href="https://www.cakeresume.com/dashboard?ref=dashboard_navs_profile">Brand</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar" style="background-color:white;">
+			
+                <ul class="nav navbar-nav">
+                    <!-- <li><a href="#home">CPS自動化倉儲</a></li> -->
+                    <!-- <li><a href="#menu1">電鍍槽智慧化監控系統</a></li> -->
+                    <!-- <li><a href="#menu2">3D建模作品</a></li> -->
+					<!-- <li><a href="#menu3">測試中</a></li> -->
+					
+					{% for i in dir %}
+						<li><a  href="/show?dir={{i}}&i=20&j=5&n=0" >{{i}}</a><br/></li>
+							
+					{% endfor %}
+                </ul>
+				
+            </div>
+        </div>
+    </nav>    
+</div>
+</body>
+</html>

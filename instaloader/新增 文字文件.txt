@@ -1,0 +1,1 @@
+python instaloader.py cindy9051820 --no-compress-json --no-metadata-json --no-captions --igtv --dirname-pattern "../static/IG/cindy9051820"

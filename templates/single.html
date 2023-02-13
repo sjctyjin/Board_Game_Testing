@@ -1,0 +1,206 @@
+<html>
+<head>
+
+    <script>
+        function getUrlF(){
+            let urlParams = new URLSearchParams(window.location.search);
+            loc = location.href.split('?')[0];
+
+            a = urlParams.get('id');
+            var num = parseInt(a)+1;
+
+            console.log(urlParams);
+            console.log(a);
+            console.log(num);
+            window.location.href=loc+'?id='+num;
+
+        }
+
+        function getUrlB(){
+            let urlParams = new URLSearchParams(window.location.search);
+            loc = location.href.split('?')[0];
+
+            a = urlParams.get('id');
+            if(parseInt(a) > 1){
+                var num = parseInt(a)-1;
+            }else
+            {
+             var num = 1;
+            }
+
+
+            console.log(urlParams);
+            console.log(a);
+            console.log(num);
+            window.location.href=loc+'?id='+num;
+
+        }
+
+
+
+        function getUrlC(){
+            var loc =location.href.split('/')[3].split('?')[0]
+            var count = 0
+            if(loc == 'long'){
+                document.getElementsByClassName('fb')[0].style.display = 'none';
+                document.getElementsByClassName('fb')[1].style.display = 'none';
+                document.getElementById('pd1').style.display = 'none';
+
+                max_h  = document.body.scrollHeight;
+                clientH  = document.body.clientHeight;
+
+                document.querySelector('body').addEventListener('scroll',function(){
+
+<!--                    console.log(this.scrollTop);-->
+<!--                    console.log(this.clientHeight);-->
+                    top_val = parseInt(this.scrollTop);
+                    vis_height = parseInt(this.clientHeight);
+                    console.log('當前 : '+(top_val+vis_height));
+                    console.log('總高 : '+ this.scrollHeight);
+                    console.log('次數'+count);
+                    if((top_val+vis_height) == parseInt(this.scrollHeight-1)){
+
+                        if(count == 0){
+                            this.scrollTop = parseInt(this.scrollHeight-4000);
+                            console.log("撞底");
+                            document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(10,30) %}<img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                            count +=1;
+                        }
+                        else if(count == 1){
+                            this.scrollTop = parseInt(this.scrollHeight-4000);
+                            console.log("撞底");
+                            document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(30,50) %}<img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                            count +=1;
+
+                        }
+                        else if(count == 2){
+                            this.scrollTop = parseInt(this.scrollHeight-4000);
+                            console.log("撞底");
+                            document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(50,70) %}<img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                            count +=1;
+
+                        }
+                        else if(count == 3){
+                            this.scrollTop = parseInt(this.scrollHeight-4000);
+                            console.log("撞底");
+                            document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(70,100) %}<img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                            count +=1;
+                            alert('已經到底了');
+
+                        }
+
+
+                    }
+
+                },true)
+
+
+            }else{
+                document.getElementsByClassName('fb')[0].style.display = '';
+                document.getElementsByClassName('fb')[1].style.display = '';
+                document.getElementsById('pd1')[1].style.display = '';
+            }
+        }
+        var count_btn = 0;
+        function btc(){
+
+                if(count_btn == 0){
+
+                    console.log("撞底");
+                    document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(10,30) %}<img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                    count_btn +=1;
+                }
+                else if(count_btn == 1){
+
+                    console.log("撞底");
+                    document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(30,50) %}<img class="pd2" class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                    count_btn +=1;
+
+                }
+                else if(count_btn == 2){
+
+                    console.log("撞底");
+                    document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(50,70) %}<img class="pd2" class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                    count_btn +=1;
+
+                }
+                else if(count_btn == 3){
+
+                    console.log("撞底");
+                    document.querySelectorAll('.pd2')[document.querySelectorAll('.pd2').length-1].insertAdjacentHTML("afterend",'{% for i in range(70,100) %}<img class="pd2" class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>{% endfor %}') ;
+                    count_btn +=1;
+                    alert('已經到底了');
+
+                }
+
+        }
+
+
+
+
+    </script>
+
+    <style>
+            body,html{
+                height:100%;
+                margin:0;
+                overflow-y:auto;
+            }
+           @media only screen and (min-width: 600px) {
+              div {
+
+                text-align:center;
+                position:relative;
+                width:90%;
+                left:5%;
+                 height:100%;
+
+              }
+            }
+
+            @media only screen and (min-width: 1200px) {
+              div {
+
+                text-align:center;
+                position:relative;
+                width:40%;
+                left:30%;
+                height:100%;
+
+              }
+            }
+    </style>
+
+
+
+</head>
+<body onload="getUrlC()">
+<div class="dik">
+<iframe style="width:560px; height:315px;"
+        src="static\手機\影片\04.mp4"
+        frameborder="0" >
+</iframe>
+<img id="pd1" src="static/iPad (2)/{{ fname }}" style="width:100%;height:auto;position:relative;top:0px;" alt="一張圖片"><br/>
+
+{% for i in range(0,10) %}
+        <img class="pd2" src="{{imgs[i]}}" style="width:100%;height:auto;position:relative;top:0px;"><br/>
+    {% endfor %}
+
+<button class="fb" onclick="getUrlB()" style="height:200px;position:relative;width:40%;left:0%;margin-left:0px;bottom:0px"> ＜＜ </button>
+<button class="fb" onclick="getUrlF()" style="height:200px;position:relative;width:40%;right:0%;margin-right:0px;bottom:0px"> ＞＞ </button>
+
+</div>
+
+<input value="+" type="button" style="position:fixed;right:20px;bottom:25px;font-size:14px;width:130px;height:130px;border:20px;" onclick="btc()"/>
+{{H}}
+{{W}}
+</body>
+
+<footer>
+<!--    <br/>-->
+<!--    <br/>-->
+<!--    <button onclick="getUrlB()" style="height:200px;position:absolute;width:50%;left:0%;margin-left:0px;bottom:0px"> ＜＜ </button>-->
+<!--<button onclick="getUrlF()" style="height:200px;position:absolute;width:50%;right:0%;margin-right:0px;bottom:0px"> ＞＞ </button><br/>-->
+<!--    <br/>-->
+</footer>
+</html>

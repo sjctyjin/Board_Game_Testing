@@ -1,0 +1,18 @@
+<html>
+<head>
+
+ 
+
+</head>
+<body onload="getUrlC()">
+<div class="dik">
+<ul class="nav navbar-nav">
+{% for i in dir %}
+<li><a  href="/show?dir={{i}}&i=10&j=5&n=0" >{{i}}</a><br/></li>
+        
+{% endfor %}
+
+</ul>
+</body>
+
+</html>
