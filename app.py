@@ -75,6 +75,7 @@ def home():
     # 取得所有檔案與子目錄名稱
     files = os.listdir(mypath)
     abl = []
+
     fTree = os.walk(mypath, topdown=True)
     for dirs, subdirs, files in fTree:
         if subdirs != []:
@@ -92,7 +93,10 @@ def home():
     #     elif isdir(fullpath):
     #         abl.append(f)
     #         print("目錄：", f)
-    return render_template(f'index.html',dir=abl)
+    # print()
+    X = range(0,len(abl)//6)
+    Y = range(0,6)
+    return render_template(f'index.html',dir=abl,x=X,y=Y)
 #
 @app.route('/scr', methods=['GET','POST'])
 def scr():
@@ -178,7 +182,7 @@ def show():
         if os.path.isdir(f"""static/{dir}/{files[o]}"""):
             imglen.append("1")
         else:
-            if os.path.splitext(f"""static/{dir}/{files[o]}""")[1] == ".mp4":
+            if os.path.splitext(f"""static/{dir}/{files[o]}""")[1] in ('.mp4', '.MP4', '.avi'):
                 imglen.append("2")
             else:
                 imglen.append("0")
@@ -220,7 +224,7 @@ def allfile():
             print("檔案：", f)
         elif isdir(fullpath):
             abl.append(f)
-            print("目錄：", f)
+            # print("目錄：", f)
     return render_template(f'menu.html',dir=abl)
 
 #Google搜尋並下載圖片
@@ -234,14 +238,16 @@ def search():
         # num = request.args.get('num')
         num = request.values['num']
         if para == None:
-            if num == None  or num != '' :
+            if num == None or num == '' :
                 num = 200
             # print(os.system(f"""python google_images_download.py -k "{key}" -l {num} --chromedriver="C:/chromedriver" """))
             if key != None or key != '' :
-                print(os.system(f"""python google_images_download.py -k "{key}" -l {num} --chromedriver="C:/chromedriver" """))
+                print(f"""python google_images_download.py -k "{key}" -l {num} --chromedriver="C:/chromedriver" """)
+                print(os.system(f"""python google_images_download.py -k "{key}" -l {num} --chromedriver="C:/chromedriver.exe" """))
 
             return redirect(url_for('home'))
         else:
+            print(f"""python instaloader/instaloader.py {key} --no-compress-json --no-metadata-json --no-captions --igtv --dirname-pattern "static/IG/{key}" """)
             print(os.system(
                 f"""python instaloader/instaloader.py {key} --no-compress-json --no-metadata-json --no-captions --igtv --dirname-pattern "static/IG/{key}" """))
 
@@ -256,7 +262,7 @@ def search():
 def upload_file():
     root_path = f"static/uploads/"
     if request.method == 'POST':
-
+        print('開始執行上傳')
         file_up = request.files.getlist("file[]")#['filename']
         # print( request.values['folder'])
         select_save = request.values['folder']
@@ -267,6 +273,7 @@ def upload_file():
         for path, dir, files in dtree:
             if dir != []:
                 dirs = dir
+                break
         print(dirs)
         dirs.append("新增資料夾")
 
@@ -286,6 +293,7 @@ def upload_file():
         #影片、照片存檔
         if file_up != []:
             for i in file_up:
+                print(i.filename)
                 formats = i.filename[i.filename.index('.'):]
                 fileName = str(time.time()).replace('.','')
                 if formats in ('.jpg', '.png', '.jpeg', '.HEIC', '.jfif'):
@@ -307,6 +315,7 @@ def upload_file():
         for path, dir, files in dtree:
             if dir != []:
                 dirs = dir
+                break
         print(dirs)
         dirs.append("新增資料夾")
         return render_template('upload.html', dirs=dirs)
