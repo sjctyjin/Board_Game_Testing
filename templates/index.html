@@ -23,6 +23,9 @@
 	background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
 
    }
+   a{
+	font-size: 4vmin;
+   }
 
  </style>
 
@@ -34,20 +37,32 @@
 	<div class="dik">
 		<table class="nav navbar-nav" style="position:absolute;left:5%;width:90%;">
 
-			{% for i in dir %}
+		
+			{% for i in x %}
 				<tr>
-					<td style="text-align:center ;">
+					{% for j in y %}
+							
+							<td style="text-align:center ;">
+								
+								<a href="/show?dir={{dir[((i*5)+j)]}}&i=10&j=10&n=0" >
+									<img src="static/files.png" style="width: 100%;height:auto;position:relative;left:0%;" >
+										<br/>
+										{{dir[((i*5)+j)]}}
+								</a><br/>
+								
+							</td>
+				
 						
-						<a href="/show?dir={{i}}&i=100&j=1&n=0" >
-							<img src="static/files.png" style="width: 20%;height:auto;position:relative;left:0%;" >
-                                <br/>
-								{{i}}
-						</a><br/>
-					</td>
+					{% endfor %}
 				</tr>
 			{% endfor %}
 		</table>
+		<br/>
 	</div>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
 	</body>
 
 </html>

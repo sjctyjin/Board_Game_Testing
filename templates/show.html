@@ -5,44 +5,44 @@
         <script src="static/jquery-3.4.1.min.js"></script>
 
     <script>
- $(function () {
+    // $(function () {
 
-    // show hide subnav depending on scroll direction
-    var position = $(window).scrollTop();
+    //     // show hide subnav depending on scroll direction
+    //     var position = $(window).scrollTop();
 
-    $(window).scroll(function () {
-        var scroll = $(window).scrollTop();
+    //     $(window).scroll(function () {
+    //     var scroll = $(window).scrollTop();
 
-        if (scroll < position) {
+    //     if (scroll < position) {
 
-            //only piece that matters
-            $('nav')
-            	.stop(true, false)
-                .removeClass('up')
-                .addClass('down');
-
-
-            // scrolling downwards, only here for dev purposes
-            console.log('moving DOWN the page');
-            //$('input').val('down');
-
-        } else {
-            //only piece that matters
-            $('nav')
-                .stop(true, false)
-                .removeClass('down')
-                .addClass('up');
+    //     //only piece that matters
+    //     $('nav')
+    //     .stop(true, false)
+    //     .removeClass('up')
+    //     .addClass('down');
 
 
-            // scrolling upwards 
-            console.log('moving UP the page');
-            //$('input').val('up');
-        }
+    //     // scrolling downwards, only here for dev purposes
+    //     console.log('moving DOWN the page');
+    //     //$('input').val('down');
 
-        position = scroll;
-    });
+    //     } else {
+    //     //only piece that matters
+    //     $('nav')
+    //     .stop(true, false)
+    //     .removeClass('down')
+    //     .addClass('up');
 
-});
+
+    //     // scrolling upwards 
+    //     console.log('moving UP the page');
+    //     //$('input').val('up');
+    //     }
+
+    //     position = scroll;
+    //     });
+
+    // });
 
         function getUrlF(){
             let urlParams = new URLSearchParams(window.location.search);
@@ -95,16 +95,43 @@
                 $('.imgshow').hide();
             });
 			
+
+
+
 				
 	
         }
+        var startX = 0
+        function myStart(event){
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+            //alert('幹');
+            console.log("起始:",startX,startY)
+        }
 
+        function myFunction(event) {
+            var x = event.changedTouches[0].clientX;
+            var y = event.changedTouches[0].clientY;
+            // var y = event.touches[0].clientY;
+            //document.getElementById("demo").innerHTML = x + ", " + y;
+            console.log("終點:",x,y)
 
+            x = x - startX;
+            // y = moveEndY - startY;
 
-
-
-
-
+            if ( x > 100 ) {
+                // alert("左往右滑");
+                document.getElementById("push_button").click();
+            }
+            else if ( x < -100 ) {
+                document.getElementById("push_button").click();
+                //alert("右往左滑");
+            }
+    
+            // else{
+            //     alert("滑了个寂寞");
+            // }
+        }
 
     </script>
 
@@ -213,7 +240,8 @@
    body{
 	background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
 
-   }	
+   }
+
 			
 			
     </style>
@@ -233,24 +261,27 @@
 <br/>
 <br/>
 <br/>
-    <div class="dik">
+    <div class="dik" ontouchend="myFunction(event)" ontouchstart="myStart(event)">
             <table id="postbord" border="1" cellpadding="0" cellspacing="0" style="position:relative;">
             {% for i in var_i %}
                 <tr>
                     {% for j in var_j %}
                         {% if lens[((i*varj)+j+num)] == "0" %}
+                            <!-- 圖片 -->
                             <td width="50"><img class="pd2" src="{{imgs[((i*varj)+j+num)]}}" onerror="this.src='static/add.png'" style="width:100%;height:auto;position:relative;top:0px;"></td>
                         {% elif lens[((i*varj)+j+num)] == "2" %}
+                            <!-- 影片 -->
                             <td width="50"><video src="{{imgs[((i*varj)+j+num)]}}" poster="static/allvid/{{imgs[((i*varj)+j+num)].split('/')[-2]}}{{imgs[((i*varj)+j+num)].split('/')[-1]}}.jpg" preload="none" controls style="width:100%;height:auto;position:relative;top:0px;"></video></td>
                         {% elif lens[((i*varj)+j+num)] == "1" %}
-                            <td width="50" style="text-align:center"><a  href="/show?dir={{imgs[((i*varj)+j+num)][7:100]}}&i=20&j=1&n=0" style="text-align:center;" >
+                            <!-- 其他類別 -->
+                            <td width="50" style="text-align:center"><a  href="/show?dir={{imgs[((i*varj)+j+num)][7:100]}}&i=10&j=5&n=0" style="text-align:center;" >
                                 <img src="static/files.png" style="width: 80%;height:auto;position:relative;left:0%;" >
                                 <br/>
                                 {{imgs[((i*varj)+j+num)][7:100]}}
                                 
                             </a></td>
                         {% else %}
-					        <td width="50"><a  href="#" >{{imgs[((i*varj)+j+num)]}}這裡看起來是空的</a></td>
+					        <td width="50"><a  href="#" >{{imgs[((i*varj)+j+num)]}}empty</a></td>
 
 						{% endif %}
                     {% endfor %}

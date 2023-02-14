@@ -14,6 +14,8 @@
         width:40px;
 		text-align:center;
        }
+          	
+
     </style>
 	<script>
 
@@ -56,8 +58,14 @@
 			
 				document.querySelector('.collapse').className = "collapse navbar-collapse";
 
-			
-		
+                let url_string = location.href
+                let url = new URL(url_string);
+                
+               
+                
+                document.querySelector("#H").value = url.searchParams.get("i");  // m2;
+                document.querySelector("#W").value = url.searchParams.get("j");  // m2;
+                document.querySelector("#floor").value = url.searchParams.get("n");  // m2;
 
 		})
 	
@@ -83,17 +91,26 @@
                 <a class="navbar-brand">寬<input id="W" value="5" /></a>
                 <a class="navbar-brand"><input id="floor" value="0" />樓</a>
             </div>
-            <div class="collapse navbar-collapse" id="myNavbar" style="background-color:white;overflow-y:scroll">
+            <div class="collapse navbar-collapse" id="myNavbar" style="background-color:white;">
 			
-                <ul class="nav navbar-nav" style="background-color:white;">
+                <ul class="nav navbar-nav" style="background-color:white;white-space:nowrap;">
                     <li class="dropdown"><a  href="/search?" style="background-image: linear-gradient(to top, #FF7575	, #FFB5B5	);" >圖片查詢</a><br/></li>
                     <li class="dropdown"><a  href="/upload"  style="background-image: linear-gradient(to top, #FF7575	, #FFB5B5	); ">圖片上傳</a><br/></li>
+                    <li class="dropdown">
+				        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="font-size:20px;">
+					        下拉 <span class="caret"></span>
+					        
+				        </a>
+                        <ul class="dropdown-menu" style="font-size:18px;height:100vh;overflow-y: scroll;">
+                        {% for i in dir %}
+                            <li><a  href="/show?dir={{i}}&i=30&j=5&n=0">{{i}}</a><br/></li>
+                                
+                        {% endfor %}
+                        
+                        </ul>
+                    </li>
 
-					{% for i in dir %}
-						<li class="dropdown"><a  href="/show?dir={{i}}&i=100&j=1&n=0" >{{i}}</a><br/></li>
-							
-					{% endfor %}
-                </ul>
+                    
 				
             </div>
         </div>
