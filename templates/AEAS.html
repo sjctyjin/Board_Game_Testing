@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+
+<html>
+<head >
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>太空桌遊網頁版</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-image:url('https://pic.616pic.com/bg_w1180/00/03/86/McRK1UgLd3.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:cover;
+            font-size:2vmin;
+        }
+        .row {
+            display: flex;
+            height: 50vh;
+        }
+        .col-md-2 {
+            display: flex;
+            flex-direction: column;
+            height:70vh;
+        }
+
+        .col-md-2 .card {
+            
+            flex: 1;
+        }
+         .col-md-8 {
+            display: flex;
+            flex-direction: column;
+            height:70vh;
+        }
+        .board_desk{
+            position:relative;
+            width:100%;
+            left:0%;
+        }
+        .board_desk img{
+            width:100%;
+            height:20vh;
+            transition: transform 0.8s;
+
+        }
+
+        .hand-area img {
+              transition: transform 0.8s;
+        }
+
+        .board_desk img:hover {
+              transform: rotateY(180deg);
+        }
+
+        .hand-area img:hover {
+              transform: translate(0px, -30px) ;
+        }
+
+        .mission{
+            position:relative;
+            width:100%;
+            height:60vh;
+            left:0%;
+        }
+        .main_area{
+             /*background-color:rgba(255,255,255,1);*/
+            background-image:url('https://png.pngtree.com/background/20210709/original/pngtree-technology-background-technological-sense-science-fiction-modern-picture-image_926084.jpg');
+            background-size:cover;
+            background-repeat:no-repeat;
+        }
+        .mission td{
+            text-align:center;
+            padding:10px;
+            border:0px solid;
+            background-color:rgba(100,100,255,0.1);
+                        border-radius:20px;
+
+        }
+            
+        .mission img{
+            width:50%;
+            height:10vh;
+            position:relative;
+        }
+        .hand-area td{
+            padding:10px;
+        }
+
+        .tooltips {
+          position: fixed;
+          padding:10px;
+          background-color:white;
+          border-radius:10px;
+          border:3px solid;
+          height:auto;
+          width:10%;
+          top:100px;
+          left:10%;
+          z-index:999999999;
+          display:block;
+        }
+        .tech{
+            position:relative;
+            width:200px;
+            height:auto;
+            left:10px;
+        }
+        .tech td{
+            border:1px solid;
+        }
+        .build{
+            position:relative;
+            width:200px;
+            height:auto;
+            left:10px;
+        }
+        .build td{
+            border:1px solid;
+        }
+
+        .self-area{
+            background-image:url('https://img.lovepik.com/background/20211101/medium/lovepik-line-background-mobile-wallpaper-image_400567675.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:cover;
+        }
+        .self-area-T{
+           background-color:rgba(255,255,255,0.1);
+           text-align:center;
+        }
+        .hand-area-T{
+            
+            background-image:url('https://pic.616pic.com/bg_w1180/00/04/51/GQLi9NAjH6.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:cover;
+        }
+        .other-player{
+            background-image:url('https://img.lovepik.com/background/20211101/medium/lovepik-technology-space-mobile-phone-wallpaper-background-image_400669533.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:cover;
+        }
+    </style>
+    <script>
+        //全域變數
+        var userHandchoice = [];
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        var SourceAray = [
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6', 
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
+			'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11',
+            'Delta12', 'Delta12', 'Delta12', 'Delta12', 'Delta12', 'Delta11', 'Delta12',
+            'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13',
+            'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14',
+            'Delta15', 'Delta15', 'Delta15', 'Delta15', 'Delta15',
+            'Delta16', 'Delta16', 'Delta16', 'Delta16', 'Delta16',
+            'Delta17', 'Delta17', 'Delta17',
+            'Delta18', 'Delta18', 'Delta18',
+            'Delta19', 'Delta19',
+            'Delta20', 'Delta20',
+			'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5',
+			'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4',
+			'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3',
+			'CMC_2', 'CMC_2', 'CMC_2', 'CMC_2', 'CMC_2',
+			'Ti_1', 'Ti_1', 'Ti_1',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+        ];
+        var PreliminaryAray = [
+            'A1A1', 'A1A2', 'A1B1', 'A1B2',
+            'B1A1', 'B1A2', 'B1B1', 'B1B2',
+            'B1C1', 'B1C2', 'C1B1', 'C1B2',
+            'C1C1', 'C1C2', 'C1D1', 'C1D2',
+            'D1C1', 'D1C2', 'D1D1', 'D1D2',
+            'D1E1', 'D1E2', 'E1D1', 'E1D2',
+            'E1E1', 'E1E2', 'E1F1', 'E1F2',
+            'F1E1', 'F1E2', 'F1F1', 'F1F2',
+            'F1A1', 'F1A2', 'A1F1', 'A1F2'
+        ];
+
+        var Preliminary = [
+			{ 'mission': "A1A1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "A1A2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "A1B1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "A1B2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 8 },
+			{ 'mission': "B1A1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 8 },
+			{ 'mission': "B1A2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 8 },
+			{ 'mission': "B1B1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "B1B2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 11 },
+			{ 'mission': "B1C1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "B1C2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 11 },
+			{ 'mission': "C1B1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 10 },
+			{ 'mission': "C1B2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 11 },
+			{ 'mission': "C1C1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 7 },
+			{ 'mission': "C1C2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 10 },
+			{ 'mission': "C1D1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "C1D2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 7 },
+			{ 'mission': "D1C1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "D1C2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "D1D1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 11 },
+			{ 'mission': "D1D2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 10 },
+			{ 'mission': "D1E1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 11 },
+			{ 'mission': "D1E2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 7 },
+			{ 'mission': "E1D1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 8 },
+			{ 'mission': "E1D2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 9 },
+			{ 'mission': "E1E1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "E1E2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 9 },
+			{ 'mission': "E1F1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "E1F2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 7 },
+			{ 'mission': "F1E1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6 },
+			{ 'mission': "F1E2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+			{ 'mission': "F1F1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 9 },
+			{ 'mission': "F1F2", "Payload": "BF2", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 10 },
+			{ 'mission': "F1A1", "Payload": "BF3", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 9 },
+			{ 'mission': "F1A2", "Payload": "BF4", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 7 },
+			{ 'mission': "A1F1", "Payload": "BF5", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 9 },
+			{ 'mission': "A1F2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12 },
+
+        ]
+
+        var Intermediate = [
+            'A1A', 'A1B', 'B1A',
+            'B1B', 'B1C', 'C1B',
+            'C1C', 'C1D', 'DIC',
+            'D1D', 'D1E', 'E1D',
+            'E1E', 'E1F', 'F1E',
+            'F1F', 'F1A', 'A1F'
+        ];
+
+        var Intermed = [
+			{ 'tech': ["A1A1", "A1A2"], 'mission': "A1A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+			{ 'tech': ["A1B1", "A1B2"], 'mission': "A1B", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["B1A1", "B1A2"], 'mission': "B1A", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["B1B1", "B1B2"], 'mission': "B1B", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["B1C1", "B1C2"], 'mission': "B1C", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+			{ 'tech': ["C1B1", "C1B2"], 'mission': "C1B", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["C1C1", "C1C2"], 'mission': "C1C", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["C1D1", "C1D2"], 'mission': "C1D", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["D1C1", "D1C2"], 'mission': "D1C", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 9 },
+			{ 'tech': ["D1D1", "D1D2"], 'mission': "D1D", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+			{ 'tech': ["D1E1", "D1E2"], 'mission': "D1E", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+			{ 'tech': ["E1D1", "E1D2"], 'mission': "E1D", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["E1E1", "E1E2"], 'mission': "E1E", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+			{ 'tech': ["E1F1", "E1F2"], 'mission': "E1F", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["F1E1", "F1E2"], 'mission': "F1E", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["F1F1", "F1F2"], 'mission': "F1F", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["F1A1", "F1A2"], 'mission': "F1A", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["A1F1", "A1F2"], 'mission': "A1F", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+
+]
+        var final_Goal = ['A','B','C','D','E','F']
+        SourceAray = shuffleArray(SourceAray);
+        PreliminaryAray = shuffleArray(PreliminaryAray);
+        Intermediate = shuffleArray(Intermediate);
+        Preliminary = shuffleArray(Preliminary);//老錢版本
+        Intermed = shuffleArray(Intermed);//老錢版本
+        //箭體使用3D列印 3種材質x各4支 - (拿到材料技術後才可升級火箭箭體)
+        //6項近地酬載，每一項酬載對應6張初階任務牌，共計36張 - 初級推進36張 6種酬載x6張 
+        //6項中距離酬載，每一項酬載對應3張中階任務牌，共計18張 - 中級推進18張 6種酬載x3張
+        //6項終極任務，每一項任務需求對應3張中階任務報酬建設與其對應的3張初階任務報酬技術
+        //推進器分為初(推力2)中(推力4)高階(推力6)，
+        //箭體會針對任務的不同而有不同效果，如
+        //不鏽鋼係數1x初級推進(2) = 2
+        //鋁合金係數1.5x初級推進(2) = 3
+        //鈦合金係數2x初級推進(2) = 4
+        
+        $(document).ready(function () {
+            var resource = document.getElementsByClassName('board_desk')[0];//.querySelectorAll('td')
+            var missions = document.getElementsByClassName('mission')[0];//.querySelectorAll('td')
+            for (var a = 0; a < resource.querySelectorAll('td').length; a++) {
+                if (a != 4) {
+
+
+                    resource.querySelectorAll('td')[a].querySelector('img').id = SourceAray.pop();
+
+
+                    resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                        console.log(this.querySelector('img'));
+                        console.log($(this))
+                        //$(this.querySelector('img')).css('height', '15vh');
+                        var sourced = this.querySelector('img');
+
+                        var d = sourced.cloneNode(true);
+                        sourced.id = SourceAray.pop();
+                        d.style.height = "18vh";
+                        d.style.transform = "";
+                        console.log(d)
+                        for (var i = 0; i < $(".hand-area td").length; i++) {
+                            if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
+                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);
+                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
+                                    event = event || window.event; // 兼容性處理
+
+                                    var mouseX = event.clientX;
+                                    var mouseY = event.clientY;
+                                    document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
+                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                });
+
+                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
+									//event = event || window.event; // 兼容性處理
+
+									//var mouseX = event.clientX;
+									//var mouseY = event.clientY;
+									//document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id
+									//document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+									//document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                    //document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                    console.log(this);
+                                    //this.style.transform = "translate(0px, -30px)";
+                                    var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
+                                    if (imgtran.style.transform == "") {
+                                       
+                                        if (userHandchoice.length < 3) {
+											imgtran.style.transform = "translate(0px, -30px)";
+                                            userHandchoice.push(imgtran.id);
+                                            console.log(userHandchoice);
+										}
+
+                                    } else {
+                                        imgtran.style.transform = "";
+										userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
+										console.log(userHandchoice);
+									}
+
+								});
+
+                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
+                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                });
+
+                                break;
+                            }
+                        }
+                    });
+                    resource.querySelectorAll('td')[a].addEventListener('mousemove', function (event) {
+                        event = event || window.event; // 兼容性處理
+
+                        var mouseX = event.clientX;
+                        var mouseY = event.clientY;
+                        console.log(this.querySelector('img').id);
+                        document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id
+                        document.getElementsByClassName('tooltips')[0].style.left = mouseX+"px";
+                        document.getElementsByClassName('tooltips')[0].style.top = mouseY+"px";
+                        document.getElementsByClassName('tooltips')[0].style.display = "block"
+                        console.log('滑鼠的X座標為: ' + mouseX + ', 滑鼠的Y座標為: ' + mouseY);
+
+                    });
+                    resource.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
+                        document.getElementsByClassName('tooltips')[0].style.display = "none"
+
+                    });
+                }
+            }
+            for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
+                if (a <= 5) {
+                    if (a != 4 & a != 0 & a != 2) {
+                        //洗牌分配任務
+                        var Begineer = Preliminary.pop();
+                        console.log(Begineer);
+                        missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                        missions.querySelectorAll('td')[a].querySelector('img').id = Begineer["mission"];
+						missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Payload']+" ";
+                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+							missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Body'][clsname] + " ";
+                        }
+                        
+                        missions.querySelectorAll('td')[a].querySelector('img').alt = Begineer['Furl']
+						
+                            //初階任務
+                            missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
+                                console.log(this.querySelector('img').className);
+                                var needed = this.querySelector('img').className.split(' ');
+								var needed_furl = this.querySelector('img').alt;
+                                event = event || window.event; // 兼容性處理
+                                var mouseX = event.clientX;
+                                var mouseY = event.clientY;
+                                document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求酬載 : "
+                                    + needed[0] +
+                                    "<br/>需求燃料 : " +
+									needed_furl +
+                                    "<br/>需求箭體 : " + needed.slice(1) +
+                                    "<br/>任務報酬 : " + this.querySelector('img').id;
+                                ;
+                                document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                document.getElementsByClassName('tooltips')[0].style.display = "block";
+                                var resource_code = "";
+                                var confirm_mission_payload = 0;
+                                var confirm_mission_body = 0;
+                                var confirm_mission_push = 0;
+                                for (var i = 0; i < userHandchoice.length; i++) {
+                                    console.log(userHandchoice[i]);
+									resource_code = userHandchoice[i];
+                                    for (var ri = 0; ri <= needed.length; ri++) {
+                                        if (resource_code == needed[ri]) {
+                                            confirm_mission_body += 1;
+                                        }
+                                    }
+									//if (userHandchoice[i])
+
+                                }
+                                document.getElementsByClassName('tooltips')[0].style.color = "red";
+
+                                console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                                var confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
+                                console.log(confirm_mission);
+                                if (confirm_mission >= 3) {
+                                    $("#" + this.querySelector('img').id).animate({ top: "-10px" });
+                                    $("#" + this.querySelector('img').id).animate({ top: "0px" });
+                                    //$(this.querySelector('img')[0]).animate('top', "0px");
+                                    console.log("#" + this.querySelector('img').id);
+                                    document.getElementsByClassName('tooltips')[0].style.color = "green";
+
+                                }
+                            });
+                            missions.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
+                                document.getElementsByClassName('tooltips')[0].style.display = "none";
+                                $("#" + this.querySelector('img').id).stop();
+                                document.getElementsByClassName('tooltips')[0].style.color = "black";
+
+                            });
+
+                            missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                    console.log("任務執行成功");
+                                    var needed = this.querySelector('img').className.split(' ');
+                                    //console.log(needed);
+                                    var check_push = 0;//確認推進器
+                                    var check_payload = 0;//確認酬載
+                                    var push_no = 0;//確認推進器序號
+                                    var payload_no = 0;//確認酬載序號
+                                    for (var i = 0; i < document.getElementsByClassName("hand-area")[0].querySelectorAll('img').length; i++) {
+                                        
+                                        resource_code = document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id;
+                                        console.log("資源馬 : ==="+resource_code);
+                                        for (var ri = 0; ri <= needed.length; ri++) {
+                                            //console.log('1019測試 : =========' + document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id)
+                                            if (resource_code == needed[ri]) {
+                                                if (resource_code.substring(0, 3) == "LOX") {
+                                                    console.log("1019測試 : ========="+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id);
+                                                    check_push = 1;
+                                                    push_no = i;
+
+                                                    break;
+                                                }
+                                                if (resource_code.substring(0, 2) == "BF") {
+                                                    console.log("1019測試 : ========="+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id);
+                                                    check_payload = 1;
+
+                                                    payload_no = i;
+                                                    break;
+                                                }
+                                            }   
+                                        }
+                                        if (check_push == 1 & check_payload == 1) {
+                                            var pushid = "#"+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[push_no].id;
+                                            var payloadid = "#" + document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[payload_no].id;
+                                            console.log(pushid);
+                                            console.log("刪除 : ", payloadid)
+                                            document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
+                                            document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
+
+                                            break;
+                                        }
+
+                                    }
+                                    //任務執行成功內容
+                                    var mission_done = this.querySelector('img');
+
+                                    console.log(d)
+                                    for (var b = 0; b < $(".tech tr").length; b++) {
+                                        var check = 0;//檢測欄位是否為1
+                                        console.log('測試b:', b);
+                                        console.log(document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
+                                        for (var c = 0; c < document.getElementsByClassName('tech')[0].querySelectorAll('tr').length; c++) {
+                                            console.log('測試c:', c);
+                                            if (document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "")
+                                            {
+                                                var d = mission_done.cloneNode(true);//複製
+                                                mission_done.id = PreliminaryAray.pop();
+                                                d.style.height = "8vh";
+                                                document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
+                                                document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
+                                                    event = event || window.event; // 兼容性處理
+                                                    console.log("迴圈處理");
+
+                                                    var mouseX = event.clientX;
+                                                    var mouseY = event.clientY;
+                                                    document.getElementsByClassName('tooltips')[0].innerHTML = "技術 : <br/>" + this.querySelector('img').id
+                                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                                });
+
+                                                document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                                });
+                                                check = 1
+                                                break;
+                                            }
+                                        
+                                        }
+                                        if (check == 1) {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                            });
+                        }
+                }
+                else {
+                    if (a != 7 & a != 9 & a != 11) {
+                        //missions.querySelectorAll('td')[a].querySelector('img').id = Intermediate.pop();
+						var Medium = Intermed.pop();
+						console.log(Medium);
+						missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                        missions.querySelectorAll('td')[a].querySelector('img').id = Medium["mission"];
+						missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][0] + " ";
+						missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][1] + " ";
+						missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Payload'] + " ";
+						for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+							missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Body'][clsname] + " ";
+						}
+
+						missions.querySelectorAll('td')[a].querySelector('img').alt = Medium['Furl']
+                        //中階任務
+                        missions.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                            console.log(this.querySelector('img').className.split(' '));
+
+                        });
+
+                        missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
+                            console.log(this.querySelector('img').className);
+                            var needed = this.querySelector('img').className.split(' ');
+							var needed_furl = this.querySelector('img').alt;
+                            event = event || window.event; // 兼容性處理
+                            var mouseX = event.clientX;
+                            var mouseY = event.clientY;
+                            document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求技術 : " + needed[0] + "/" + needed[1]+
+
+                                "<br/>需求酬載 : "
+                                + needed[2] +
+                                "<br/>需求燃料 : " +
+								needed_furl +
+                                "<br/>需求箭體 : " + needed.slice(3) +
+                                "<br/>任務報酬 : " + this.querySelector('img').id;
+                            ;
+                            document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                            document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                            document.getElementsByClassName('tooltips')[0].style.display = "block";
+                            var resource_code = "";
+                            var confirm_mission = 0;
+                            var confirm_tech = 0;
+                            for (var res = 0; res < document.getElementsByClassName("hand-area")[0].querySelectorAll('img').length; res++) {
+                                console.log();
+                                resource_code = document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[res].id;
+                                for (var ri = 0; ri <= needed.length; ri++) {
+                                    if (resource_code == needed[ri]) {
+                                        confirm_mission += 1;
+                                    }
+                                }
+
+                            }
+                            for (var a = 0; a < document.getElementsByClassName("tech")[0].querySelectorAll('img').length; a++) {
+                                console.log();
+                                tech_code = document.getElementsByClassName("tech")[0].querySelectorAll('img')[a].id;
+                                for (var ri = 0; ri <= needed.length; ri++) {
+                                    if (tech_code == needed[ri]) {
+                                        confirm_tech += 1;
+                                    }
+                                }
+
+                            }
+                            document.getElementsByClassName('tooltips')[0].style.color = "red";
+
+                            console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                            if (confirm_mission >= 3 & confirm_tech >= 1) {
+                                $("#" + this.querySelector('img').id).animate({ top: "-10px" });
+                                $("#" + this.querySelector('img').id).animate({ top: "0px" });
+                                //$(this.querySelector('img')[0]).animate('top', "0px");
+                                console.log("#" + this.querySelector('img').id);
+                                document.getElementsByClassName('tooltips')[0].style.color = "green";
+
+
+                            }
+                        });
+                        missions.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
+                            document.getElementsByClassName('tooltips')[0].style.display = "none";
+                            $("#" + this.querySelector('img').id).stop();
+                            document.getElementsByClassName('tooltips')[0].style.color = "black";
+
+                        });
+
+                        missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                            if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                console.log("任務執行成功");
+                                //任務執行成功內容
+                                var mission_done = this.querySelector('img');
+
+                               
+
+                                console.log(d)
+                                for (var b = 0; b < $(".build tr").length; b++) {
+                                    var check = 0;//檢測欄位是否為1
+                                    console.log('測試b:', b);
+                                    console.log(document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
+                                    for (var c = 0; c < document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length; c++) {
+                                        console.log('測試c:', c);
+                                        if (document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "") {
+                                            var d = mission_done.cloneNode(true);//複製
+                                            mission_done.id = Intermediate.pop();
+                                            d.style.height = "8vh";
+                                            document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
+                                            document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
+                                                event = event || window.event; // 兼容性處理
+                                                console.log("迴圈處理");
+
+                                                var mouseX = event.clientX;
+                                                var mouseY = event.clientY;
+                                                document.getElementsByClassName('tooltips')[0].innerHTML = "建設 : <br/>" + this.querySelector('img').id
+                                                document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                                document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                                document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                            });
+
+                                            document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
+                                                document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                            });
+                                            check = 1
+                                            break;
+                                        }
+
+                                    }
+                                    if (check == 1) {
+                                        break;
+                                    }
+                                }
+                            }
+
+                        });
+                    }
+                }
+            }
+            
+
+        });
+           
+
+	</script>
+</head>
+    
+<body>
+         <div class="tooltips" style="display:none">
+          <span class="tooltiptext">Tooltip text</span>
+            
+        </div>
+    <form id="form1" runat="server" style="z-index:-1111">
+       
+         <div class="container-fluid">
+        <div class="row">
+        
+            <div class="col-md-2">
+                <div class="card">
+                    <div class="card-body other-player" >
+                        <h5 class="card-title">其他玩家資訊</h5>
+                        <!-- 其他玩家資訊內容 -->
+                        <div class="card bg-primary text-white mb-4">
+                            <div class="card-body">熊貓國</div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <a class="small text-white stretched-link" href="#">View Details</a>
+                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                <img src="" />
+                            </div>
+                        </div>
+                        <div class="card bg-success text-white mb-4">
+                            <div class="card-body">蘇國</div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <a class="small text-white stretched-link" href="#">View Details</a>
+                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                            </div>
+                        </div>
+                        <div class="card bg-danger text-white mb-4">
+                            <div class="card-body">卐國</div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <a class="small text-white stretched-link" href="#">View Details</a>
+                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                
+                <div class="card" >
+                    <div class="card-body main_area" style="height:70vh">
+                        <h5 class="card-title">牌庫區域<i class="bi bi-search"></i></h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="board_desk" >
+                                    <tr>
+                                        <td><img  class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJW6gpA0R1f_K3P03JN6g9wpCPe1NgYE463g&usqp=CAU" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                        <td><img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                           
+                            <div class="col-md-6">
+                                <table class="mission">
+                                <tr>
+                                    <td ></td>
+                                        <td><img  class="BF3 LOX2 AL Ti" id="A1B1" src="https://png.pngtree.com/png-clipart/20220404/ourmid/pngtree-blue-frame-with-leaves-ornament-png-image_4527039.png" alt="Card Image"></td>
+ 
+                                    <td ></td>
+                                </tr>
+                                <tr>
+                                         <!-- O - A1A1是任務名稱 同時代表著一個酬載 完成後可獲得對應技術 -->
+                                         <!-- X - A1A1是技術名稱 由一項任務來執行後獲得  -->
+
+                                         <!-- 一項任務存在火箭燃料需求數值、 -->
+                                            <!-- 且同時低階任務內容是可重複的，但技術不重複  -->
+                                         <!-- 低階任務的燃料需求大致一致 有高有低 但會在一定範圍 -->
+                                            <!-- 到了中階任務後所需燃料會大上一截，因此有必要拿到燃料效率提升技術 -->
+                                         <!-- 任務條件或者可以設計成 :  -->
+                                            <!-- 該任務需配備何種強度以上的材料才有辦法完成 -->
+                                            <!-- 而配備的推進器燃料則可依材料性質而有不同的推進效率 -->
+                                            <!-- 任務可以配為以下 -->
+                                            <!-- 若火箭為 碳纖維強化聚合物 則火箭推進效率x2 ，例: 推進器數值2 就x2 = 4 -->
+                                            <!-- 若火箭為 鈦合金 則火箭推進效率x1 ，例: 推進器數值2 就x1 = 2                                                                                        若火箭為 碳纖維強化聚合物 則火箭推進效率x2 ，例: 推進器數值2 就x2 = 4 -->
+                                            <!-- 若火箭為 鋁合金 則火箭推進效率x1/2 ，例: 推進器數值2 就x1/2 = 1                                                                                        若火箭為 碳纖維強化聚合物 則火箭推進效率x2 ，例: 推進器數值2 就x2 = 4 -->
+
+                                            
+                                        <td><img class="BF1 LOX2 Ti SUS316" id="A1A1" src="https://png.pngtree.com/png-clipart/20220404/ourmid/pngtree-blue-frame-with-leaves-ornament-png-image_4527039.png" alt="Card Image" /></td>
+                                                    
+                                        <td>初階任務<br/><img class="img-thumbnail" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSz5SQAOhO9HYLMU0IUX6WqseEEcGcV1Dr69BnLRnmjMJjYarrV5scLDew6rj6WE4xVT04&usqp=CAU" alt="Card Image" /></td>
+                                        <td><img class="BF2 LOX2 AL SUS316 Ti" id="A1A2"  src="https://png.pngtree.com/png-clipart/20220404/ourmid/pngtree-blue-frame-with-leaves-ornament-png-image_4527039.png" alt="Card Image" /></td>
+                                </tr>
+                                <tr>
+                                        <td><img class="A1A1 A1A2 BF1 LOX4 Ti CA" id="A1A" src="https://pic.616pic.com/ys_img/01/15/38/9SudJh6zmP.jpg" alt="Card Image" /></td>                                                    
+                                        <td>中階任務<br/><img  src="https://png.pngtree.com/png-clipart/20220114/ourmid/pngtree-five-pointed-star-of-card-gate-png-image_4185384.png" alt="Card Image"></td>
+                                        <td><img class="A1B1 A1B2 BF2 LOX4 Ti" id="A1B" src="https://pic.616pic.com/ys_img/01/15/38/9SudJh6zmP.jpg" alt="Card Image"></td>
+                                </tr>
+                                <tr>
+                                    <td ></td>
+                                        <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="https://pic.616pic.com/ys_img/01/15/38/9SudJh6zmP.jpg" alt="Card Image"></td>
+                                    <td ></td>
+                                </tr>
+                            </table>
+                            </div>
+                        </div>
+              
+                  
+                            
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card self-area">
+                    <div class="card-body self-area-T">
+                        <h5 class="card-title btn btn-light" >技術</h5>
+                        <!-- 自己的頭像與手牌內容 -->
+                        <table class="tech">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                         <br/>
+                        <h5 class="card-title btn btn-light" >建設</h5>
+                         <br/>
+                        <table class="build">
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-12" style="position:relative;height:30vh;bottom:0px;width:100%;background:radial-gradient(ellipse at center,#075e8e,#14142e);">
+                    <div class="row hand-area-T" style="bottom:0px;position:absolute;border:0px red solid;height:30vh;width:100%">
+                        <div class="col-md-2" style="border:0px yellow solid;height:30vh;text-align:center">
+                            <table>
+                                <tr>
+                                    <td style="color:wheat">
+                                        米國
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img class="img-thumbnail" style="height:auto;width:80%" src="https://d1grca2t3zpuug.cloudfront.net/2019/11/kuniwordd01.jpg" alt="Card Image" />
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <div class="col-md-10">
+                             <table class="hand-area">
+                                <tr>
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                              
+                            </table>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+       
+       
+    </div>
+        
+    </form>
+    
+</body>
+    
+</html>

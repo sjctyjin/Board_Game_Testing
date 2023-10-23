@@ -96,7 +96,7 @@ def home():
     # print()
     X = range(0,len(abl)//6)
     Y = range(0,6)
-    return render_template(f'index.html',dir=abl,x=X,y=Y)
+    return render_template(f'AEAS.html',dir=abl,x=X,y=Y)
 #
 @app.route('/scr', methods=['GET','POST'])
 def scr():
