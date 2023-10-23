@@ -53,7 +53,7 @@
         }
 
         .hand-area img {
-              transition: transform 0.8s;
+              transition: transform 0.2s;
         }
 
         .board_desk img:hover {
@@ -61,7 +61,7 @@
         }
 
         .hand-area img:hover {
-              transform: translate(0px, -30px) ;
+              transform: translate(0px, -10px) ;
         }
 
         .mission{
@@ -109,18 +109,18 @@
         }
         .tech{
             position:relative;
-            width:200px;
+            width:100%;
             height:auto;
-            left:10px;
+            left:0px;
         }
         .tech td{
             border:1px solid;
         }
         .build{
             position:relative;
-            width:200px;
+            width:100%;
             height:auto;
-            left:10px;
+            left:0px;
         }
         .build td{
             border:1px solid;
@@ -155,6 +155,69 @@
             background-position:center;
             background-size:cover;
         }
+
+
+        main {
+            text-align: center;
+          }
+          
+          .figure {
+            bottom: 29vh;
+            max-width: 40vw;
+            position: fixed;
+            left: 30%;
+            z-index: 9;
+            overflow: visible;
+            
+          }
+         
+          .smoke {
+            animation: smoke .1s 70 ease-in-out alternate;
+          }
+          @keyframes smoke {
+            0% {
+              transform: translate3d(-5px, 0, 0);
+            }
+            100% {
+              transform: translate3d(5px, 0, 0);
+            }
+          }
+          .flame {
+            animation: burnInner2 .1s 70 ease-in-out alternate;
+          }
+          @keyframes burnInner2 {
+            0% {
+              transform: translate3d(0, 0, 0);
+            }
+            100% {
+              transform: translate3d(0, 3px, 0);
+            }
+          }
+          @keyframes thrust {
+            0% {
+              opacity: 1;
+            }
+            100% {
+              opacity: .5;
+            }
+        }
+        #mission_complete{
+            /* position: fixed;
+            z-index: 100;*/
+            top:20vh ;
+            display: none;
+
+        }
+        main h1 {
+            font-size: 2.375rem;
+            max-width: 32rem;
+            margin: 5px auto 0;
+            color:red;
+            position: relative;
+            top: 60vh;
+            z-index: 9;
+          }
+          
     </style>
     <script>
         //全域變數
@@ -414,20 +477,42 @@
                                 var confirm_mission_payload = 0;
                                 var confirm_mission_body = 0;
                                 var confirm_mission_push = 0;
+                                var choicebodyweight = 0;
                                 for (var i = 0; i < userHandchoice.length; i++) {
                                     console.log(userHandchoice[i]);
 									resource_code = userHandchoice[i];
-                                    for (var ri = 0; ri <= needed.length; ri++) {
-                                        if (resource_code == needed[ri]) {
-                                            confirm_mission_body += 1;
+                                    if (resource_code == needed[0])//比對酬載
+                                    {
+                                        confirm_mission_payload = 1;
+                                    }
+                                    for (var ri = 1; ri <= needed.length-1; ri++) {
+                                        if (resource_code == needed[ri])//比對箭體
+                                        {
+                                            confirm_mission_body = 1;
+                                            choicebodyweight = resource_code.slice(-1);
                                         }
                                     }
-									//if (userHandchoice[i])
+									if (resource_code.slice(0,-2) == "Delta"){
+                                        confirm_mission_push = resource_code.slice(-2);
+                                    }
 
                                 }
+                                
                                 document.getElementsByClassName('tooltips')[0].style.color = "red";
-
+                                console.log("確認酬載 : "+confirm_mission_payload);
+                                console.log("確認箭伸 : "+choicebodyweight);
+                                console.log("確認燃料 : "+confirm_mission_push)
                                 console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                                //檢測燃料是否足以執行任務
+                                if(confirm_mission_push != 0){
+                                    var checkFurl = parseInt(confirm_mission_push) - parseInt(choicebodyweight);
+                                    if(checkFurl>=needed_furl){
+                                        confirm_mission_push = 1;
+                                    }else{
+                                        confirm_mission_push = 0;
+                                    }
+                                }
+                                console.log("推進燃料數 : "+checkFurl);
                                 var confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
                                 console.log(confirm_mission);
                                 if (confirm_mission >= 3) {
@@ -447,53 +532,38 @@
                             });
 
                             missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                    $('#mission_complete').show();
+                                    //document.getElementById("mission_complete").style.display = "block";
+                                    $('#mission_complete').animate({height:"1200px"},2000);
+                                   
+                                  
+                                    console.log("任務執行成功");             
+                                    if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
                                     console.log("任務執行成功");
+                                   
                                     var needed = this.querySelector('img').className.split(' ');
                                     //console.log(needed);
                                     var check_push = 0;//確認推進器
                                     var check_payload = 0;//確認酬載
                                     var push_no = 0;//確認推進器序號
                                     var payload_no = 0;//確認酬載序號
-                                    for (var i = 0; i < document.getElementsByClassName("hand-area")[0].querySelectorAll('img').length; i++) {
-                                        
-                                        resource_code = document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id;
-                                        console.log("資源馬 : ==="+resource_code);
-                                        for (var ri = 0; ri <= needed.length; ri++) {
-                                            //console.log('1019測試 : =========' + document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id)
-                                            if (resource_code == needed[ri]) {
-                                                if (resource_code.substring(0, 3) == "LOX") {
-                                                    console.log("1019測試 : ========="+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id);
-                                                    check_push = 1;
-                                                    push_no = i;
+                                    var pushid = "";
+                                    // console.log("刪除 : ", payloadid)
+                                    for(var choicI = 0;choicI < userHandchoice.length;choicI ++){
 
-                                                    break;
-                                                }
-                                                if (resource_code.substring(0, 2) == "BF") {
-                                                    console.log("1019測試 : ========="+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[i].id);
-                                                    check_payload = 1;
-
-                                                    payload_no = i;
-                                                    break;
-                                                }
-                                            }   
-                                        }
-                                        if (check_push == 1 & check_payload == 1) {
-                                            var pushid = "#"+document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[push_no].id;
-                                            var payloadid = "#" + document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[payload_no].id;
-                                            console.log(pushid);
-                                            console.log("刪除 : ", payloadid)
+                                        if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
+                                            pushid = "#"+userHandchoice[choicI];
                                             document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
-                                            document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
-
-                                            break;
                                         }
-
+                                        
                                     }
+                                    
+                                    //document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
+                                    userHandchoice = [];
                                     //任務執行成功內容
                                     var mission_done = this.querySelector('img');
 
-                                    console.log(d)
+
                                     for (var b = 0; b < $(".tech tr").length; b++) {
                                         var check = 0;//檢測欄位是否為1
                                         console.log('測試b:', b);
@@ -530,9 +600,19 @@
                                             break;
                                         }
                                     }
-                                }
+                                    
+                                    setTimeout(function() {
+                                          $('#mission_complete').animate({height:"0px"},2000);
+                                          setTimeout(function() {
+                                             $('#mission_complete').hide();
+                                            }, 2100);
+                                          
 
-                            });
+                                          //document.getElementById("mission_complete").style.display = "none";
+                                    }, 4000);
+                                }
+                                //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容
+                             });
                         }
                 }
                 else {
@@ -680,6 +760,23 @@
          <div class="tooltips" style="display:none">
           <span class="tooltiptext">Tooltip text</span>
             
+        </div>
+        <div id="mission_complete">
+            <main>
+                <svg class="figure" viewBox="0 0 508 268" aria-hidden="true">
+                  <path d="M305.2 156.6c0 4.6-.5 9-1.6 13.2-2.5-4.4-5.6-8.4-9.2-12-4.6-4.6-10-8.4-16-11.2 2.8-11.2 4.5-22.9 5-34.6 1.8 1.4 3.5 2.9 5 4.5 10.5 10.3 16.8 24.5 16.8 40.1zm-75-10c-6 2.8-11.4 6.6-16 11.2-3.5 3.6-6.6 7.6-9.1 12-1-4.3-1.6-8.7-1.6-13.2 0-15.7 6.3-29.9 16.6-40.1 1.6-1.6 3.3-3.1 5.1-4.5.6 11.8 2.2 23.4 5 34.6z" fill="#2E3B39" fill-rule="nonzero"/>
+                  <path d="M282.981 152.6c16.125-48.1 6.375-104-29.25-142.6-35.625 38.5-45.25 94.5-29.25 142.6h58.5z" stroke="#FFF" stroke-width="3.396" fill="#6DDCBD"/>
+                  <path d="M271 29.7c-4.4-10.6-9.9-20.6-16.6-29.7-6.7 9-12.2 19-16.6 29.7H271z" stroke="#FFF" stroke-width="3" fill="#2E3B39"/>
+                  <circle fill="#FFF" cx="254.3" cy="76.8" r="15.5"/>
+                  <circle stroke="#FFF" stroke-width="7" fill="#6DDCBD" cx="254.3" cy="76.8" r="12.2"/>
+                  <path class="smoke" d="M507.812 234.24c0-2.16-.632-4.32-1.58-6.24-3.318-6.72-11.85-11.52-21.804-11.52-1.106 0-2.212.12-3.318.24-.474-11.52-12.956-20.76-28.282-20.76-3.318 0-6.636.48-9.638 1.32-4.74-6.72-14.062-11.28-24.806-11.28-.79 0-1.58 0-2.37.12-.79 0-1.58-.12-2.37-.12-10.744 0-20.066 4.56-24.806 11.28a35.326 35.326 0 00-9.638-1.32c-15.642 0-28.282 9.6-28.282 21.48 0 1.32.158 2.76.474 3.96a26.09 26.09 0 00-4.424-.36c-8.058 0-15.01 3.12-19.118 7.8-3.476-1.68-7.742-2.76-12.324-2.76-12.008 0-21.804 7.08-22.752 15.96h-.158c-9.322 0-17.38 4.32-20.856 10.44-4.108-3.6-10.27-6-17.222-6h-1.264c-6.794 0-12.956 2.28-17.222 6-3.476-6.12-11.534-10.44-20.856-10.44h-.158c-.948-9-10.744-15.96-22.752-15.96-4.582 0-8.69.96-12.324 2.76-4.108-4.68-11.06-7.8-19.118-7.8-1.422 0-3.002.12-4.424.36.316-1.32.474-2.64.474-3.96 0-11.88-12.64-21.48-28.282-21.48-3.318 0-6.636.48-9.638 1.32-4.74-6.72-14.062-11.28-24.806-11.28-.79 0-1.58 0-2.37.12-.79 0-1.58-.12-2.37-.12-10.744 0-20.066 4.56-24.806 11.28a35.326 35.326 0 00-9.638-1.32c-15.326 0-27.808 9.24-28.282 20.76-1.106-.12-2.212-.24-3.318-.24-9.954 0-18.486 4.8-21.804 11.52-.948 1.92-1.58 4.08-1.58 6.24 0 4.8 2.528 9.12 6.636 12.36-.79 1.44-1.264 3.12-1.264 4.8 0 7.2 7.742 13.08 17.222 13.08h462.15c9.48 0 17.222-5.88 17.222-13.08 0-1.68-.474-3.36-1.264-4.8 4.582-3.24 7.11-7.56 7.11-12.36z" fill="#E6E9EE"/>
+                  <path fill="#6DDCBD" d="M239 152h30v8h-30z"/>
+                  <path class="exhaust__line" fill="#E6E9EE" d="M250 172h7v90h-7z"/>
+                  <path class="flame" d="M250.27 178.834l-5.32-8.93s-2.47-5.7 3.458-6.118h10.26s6.232.266 3.306 6.194l-5.244 8.93s-3.23 4.37-6.46 0v-.076z" fill="#AA2247"/>
+                </svg>
+                <h1 >The mission successfully! Congratulations!</p>
+
+                 </main>
         </div>
     <form id="form1" runat="server" style="z-index:-1111">
        
