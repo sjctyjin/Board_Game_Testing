@@ -222,6 +222,9 @@
     <script>
         //全域變數
         var userHandchoice = [];
+        var checkcover = 0;//當使用者點擊覆蓋資源時為1
+        var chec_cover_num = [];//計算使用者點擊覆蓋資源牌數
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -358,19 +361,106 @@
 
 
                     resource.querySelectorAll('td')[a].querySelector('img').id = SourceAray.pop();
-
+                    resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
 
                     resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
-                        console.log(this.querySelector('img'));
-                        console.log($(this))
+                        
                         //$(this.querySelector('img')).css('height', '15vh');
                         var sourced = this.querySelector('img');
-
+                        
                         var d = sourced.cloneNode(true);
+                        
+                        if(checkcover == 1){
+                            if(chec_cover_num.length != 0){
+                                if(sourced.alt == chec_cover_num[0]){
+                                    return;
+                                }
+                               
+                            }
+                            SourceAray.unshift(sourced.id);
+                            sourced.id = SourceAray.pop();
+                            
+                            sourced.parentElement.style.zIndex = 20;
+                            sourced.style.zIndex = -20;
+                            
+                            console.log(sourced.parentElement);
+                            resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
+                            console.log(sourced.alt);
+                            switch (sourced.alt) {
+                                case "0": {
+                                    sourced.style.transform = "translate(100%, 100%)";                             
+                                    break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+                                }
+                                case "1": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(0%, 100%)";                             
+                                    break;
+                                }
+                                case "2": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(-100%, 100%)";                             
+                                    break;
+                                }
+                                case "3": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(100%, 0%)";                             
+                                    break;
+                                }
+                                case "5": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(-100%, 0%)";                             
+                                    break;
+                                }
+                                case "6": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(100%, -100%)";                             
+                                    break;
+                                }
+                                case "7": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(0%, -100%)";                             
+                                    break;
+                                }
+                                case "8": {
+                                    // 是去判斷 action === 'say_hi'
+                                    sourced.style.transform = "translate(-100%, -100%)";                             
+                                    break;
+                                }
+                                
+                                default: {
+                                    break;
+                                }
+                                }
+                        
+                            
+                            setTimeout(function() {
+                                    // sourced.style.transform = "translate(0px, 0px)";
+                                    sourced.style.transform = "";
+                                    
+                                    resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
+                                    chec_cover_num.push(sourced.alt);
+                                    sourced.src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                    console.log("蓋牌數"+chec_cover_num.length)
+                                            setTimeout(function() {
+                                            if(chec_cover_num.length == 2){
+                                            
+                                            resource.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                            resource.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                            document.getElementById("mask").style.display = "none";
+                                            document.getElementById("mask").style.zIndex = "0";
+                                            document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                                            checkcover = 0;
+                                            chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                            }
+                                        }, 500);
+                                    }, 500);
+                                   
+                            return;
+                        }
+                        
                         sourced.id = SourceAray.pop();
                         d.style.height = "18vh";
                         d.style.transform = "";
-                        console.log(d)
                         for (var i = 0; i < $(".hand-area td").length; i++) {
                             if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
                                 document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);
@@ -432,12 +522,32 @@
                         document.getElementsByClassName('tooltips')[0].style.top = mouseY+"px";
                         document.getElementsByClassName('tooltips')[0].style.display = "block"
                         console.log('滑鼠的X座標為: ' + mouseX + ', 滑鼠的Y座標為: ' + mouseY);
+                        if(checkcover == 1){
+                            this.style.backgroundColor = "red";
+                        }
 
                     });
                     resource.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
                         document.getElementsByClassName('tooltips')[0].style.display = "none"
-
+                        if(checkcover == 1){
+                            this.style.backgroundColor = "";
+                        }
                     });
+                }
+                else{
+                    resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                        document.getElementById("mask").style.display="block";
+                        document.getElementById("mask").style.zIndex = "20";
+                        //document.getElementById("mask").style.zIndex = "20";
+                        document.getElementsByClassName("board_desk")[0].style.zIndex = "100";
+                        checkcover = 1;
+                        document.getElementById("mask").addEventListener("click",function(){
+                            document.getElementById("mask").style.display = "none";
+                            document.getElementById("mask").style.zIndex = "0";
+                            document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                            checkcover = 0;
+                        })
+                    })
                 }
             }
             for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
@@ -532,13 +642,13 @@
                             });
 
                             missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                 
+                                   
+                                    
+                                    if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
                                     $('#mission_complete').show();
                                     //document.getElementById("mission_complete").style.display = "block";
-                                    $('#mission_complete').animate({height:"1200px"},2000);
-                                   
-                                  
-                                    console.log("任務執行成功");             
-                                    if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                    $('#mission_complete').animate({height:"1400px"},2500);
                                     console.log("任務執行成功");
                                    
                                     var needed = this.querySelector('img').className.split(' ');
@@ -554,6 +664,9 @@
                                         if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
                                             pushid = "#"+userHandchoice[choicI];
                                             document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
+                                        }else{
+                                            pushid = "#"+userHandchoice[choicI];
+                                            document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
                                         }
                                         
                                     }
@@ -602,7 +715,7 @@
                                     }
                                     
                                     setTimeout(function() {
-                                          $('#mission_complete').animate({height:"0px"},2000);
+                                          $('#mission_complete').animate({height:"0px"},2500);
                                           setTimeout(function() {
                                              $('#mission_complete').hide();
                                             }, 2100);
@@ -610,9 +723,19 @@
 
                                           //document.getElementById("mission_complete").style.display = "none";
                                     }, 4000);
-                                }
-                                //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容
-                             });
+
+                                        var Begineer = Preliminary.pop();
+                                        console.log(Begineer);
+                                        this.querySelector('img').className = "";
+                                        this.querySelector('img').id = Begineer["mission"];
+                                        this.querySelector('img').className += Begineer['Payload']+" ";
+                                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                            this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                        }
+                                        this.querySelector('img').alt = Begineer['Furl']
+                                        }
+                                    //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容
+                                    });
                         }
                 }
                 else {
@@ -658,18 +781,47 @@
                             var resource_code = "";
                             var confirm_mission = 0;
                             var confirm_tech = 0;
-                            for (var res = 0; res < document.getElementsByClassName("hand-area")[0].querySelectorAll('img').length; res++) {
-                                console.log();
-                                resource_code = document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[res].id;
-                                for (var ri = 0; ri <= needed.length; ri++) {
-                                    if (resource_code == needed[ri]) {
-                                        confirm_mission += 1;
+
+                            var confirm_mission_payload = 0;
+                            var confirm_mission_body = 0;
+                            var confirm_mission_push = 0;
+                            var choicebodyweight = 0;
+                            for (var i = 0; i < userHandchoice.length; i++) {
+                                    console.log(userHandchoice[i]);
+									resource_code = userHandchoice[i];
+                                    if (resource_code == needed[2])//比對酬載
+                                    {
+                                        confirm_mission_payload = 1;
                                     }
-                                }
+                                    for (var ri = 3; ri <= needed.length-1; ri++) {
+                                        if (resource_code == needed[ri])//比對箭體
+                                        {
+                                            confirm_mission_body = 1;
+                                            choicebodyweight = resource_code.slice(-1);
+                                        }
+                                    }
+									if (resource_code.slice(0,-2) == "Delta"){
+                                        confirm_mission_push = resource_code.slice(-2);
+                                    }
 
                             }
+                            console.log("確認酬載 : "+confirm_mission_payload);
+                            console.log("確認箭伸 : "+choicebodyweight);
+                            console.log("確認燃料 : "+confirm_mission_push)
+                            console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                            //檢測燃料是否足以執行任務
+                            if(confirm_mission_push != 0){
+                                var checkFurl = parseInt(confirm_mission_push) - parseInt(choicebodyweight);
+                                if(checkFurl>=needed_furl){
+                                    confirm_mission_push = 1;
+                                }else{
+                                    confirm_mission_push = 0;
+                                }
+                            }
+
+                                console.log("推進燃料數 : "+checkFurl);
+                            //技能確認
                             for (var a = 0; a < document.getElementsByClassName("tech")[0].querySelectorAll('img').length; a++) {
-                                console.log();
                                 tech_code = document.getElementsByClassName("tech")[0].querySelectorAll('img')[a].id;
                                 for (var ri = 0; ri <= needed.length; ri++) {
                                     if (tech_code == needed[ri]) {
@@ -679,7 +831,7 @@
 
                             }
                             document.getElementsByClassName('tooltips')[0].style.color = "red";
-
+                            confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
                             console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
                             if (confirm_mission >= 3 & confirm_tech >= 1) {
                                 $("#" + this.querySelector('img').id).animate({ top: "-10px" });
@@ -700,6 +852,24 @@
 
                         missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
                             if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                    $('#mission_complete').show();
+                                    //document.getElementById("mission_complete").style.display = "block";
+                                    $('#mission_complete').animate({height:"1400px"},2500);
+
+                                //先刪除手牌
+                                for(var choicI = 0;choicI < userHandchoice.length;choicI ++){
+
+                                    if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
+                                        pushid = "#"+userHandchoice[choicI];
+                                        document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
+                                    }else{
+                                        pushid = "#"+userHandchoice[choicI];
+                                            document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
+                                        }
+                                }
+                                //document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
+                                userHandchoice = [];
+
                                 console.log("任務執行成功");
                                 //任務執行成功內容
                                 var mission_done = this.querySelector('img');
@@ -708,6 +878,7 @@
 
                                 console.log(d)
                                 for (var b = 0; b < $(".build tr").length; b++) {
+
                                     var check = 0;//檢測欄位是否為1
                                     console.log('測試b:', b);
                                     console.log(document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
@@ -742,13 +913,32 @@
                                         break;
                                     }
                                 }
+                                
+                                setTimeout(function() {
+                                        $('#mission_complete').animate({height:"0px"},2500);
+                                        setTimeout(function() {
+                                            $('#mission_complete').hide();
+                                        }, 2100);
+                                        //document.getElementById("mission_complete").style.display = "none";
+                                }, 4000);
+
+                                var Medium = Intermed.pop();
+                                console.log(Medium);
+                                this.querySelector('img').className = "";
+                                this.querySelector('img').id = Medium["mission"];
+                                this.querySelector('img').className += Medium['tech'][0] + " ";
+                                this.querySelector('img').className += Medium['tech'][1] + " ";
+                                this.querySelector('img').className += Medium['Payload'] + " ";
+                                for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                    this.querySelector('img').className += Medium['Body'][clsname] + " ";
+                                }
                             }
 
                         });
                     }
                 }
             }
-            
+                
 
         });
            
@@ -760,6 +950,9 @@
          <div class="tooltips" style="display:none">
           <span class="tooltiptext">Tooltip text</span>
             
+        </div>
+        <div id="mask" style="width: 120%;height: 100vh;display:none;position: fixed;background-color: black;opacity: 0.7;">
+                    123              
         </div>
         <div id="mission_complete">
             <main>
