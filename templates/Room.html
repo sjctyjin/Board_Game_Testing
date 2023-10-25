@@ -1,0 +1,266 @@
+<html>
+<head>
+
+ <style>
+	 #dil{
+	 	font-size:5vmin;
+	 }
+	 td{
+	 	font-size:5vmin;
+	 	border:0px solid;
+	 	padding:5px;
+	 	text-align:center;
+		 background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+         background-color: darkblue;
+       
+	 }
+     img{
+        width: 100%;
+        height: auto;
+     }
+ 
+	 table{
+   	border-collapse: collapse;
+   	width: 770px; 	
+   	/*自動斷行*/
+   	word-wrap: break-word;
+   	table-layout: fixed;
+   }
+   .tooltips {
+          position: fixed;
+          padding:10px;
+          background-color:white;
+          border-radius:10px;
+          border:3px solid;
+          height:auto;
+          width:10%;
+          top:100px;
+          left:10%;
+          z-index:999999999;
+          display:block;
+        }
+   body{
+	background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+
+   }
+   a{
+	font-size: 4vmin;
+   }
+
+ </style>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    var hostname = "192.168.2.105:5000/"
+    var self_select = "";
+setInterval(() => {
+    console.log("test");
+    
+    $.ajax({
+                type: "GET",
+                url:  "menber",
+
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    //console.log(data.menber);
+                    var imgID = document.getElementById("menber").querySelectorAll("img");
+                    for(var i =0;i < imgID.length;i++){
+                            
+                            if(data.menber.length != 0){
+                               
+                                for(var di = 0;di<data.menber.length;di++){
+                                    if(data.menber[di] == imgID[i].id){
+                                        document.getElementById(data.menber[di]).style.opacity = 0.3;
+                                        document.getElementById(data.menber[di]).parentElement.style.backgroundColor = "red";
+
+                                    }                                
+                                }// console.log(document.getElementById(data.menber[di]));
+                               
+                            }
+                            
+                           
+                            
+                        }
+                        
+                    
+                    
+                },
+                error: function () {
+                    // 请求失败后的处理
+                    console.log("请求失败");
+                }
+            });
+}, 500);
+
+function getUrlC(){
+    //初入頁面建立
+    var dt = new Date();
+    var urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('state', "A"+dt.getTime());
+    var newUrl = window.location.pathname + '?' + urlParams.toString();
+    window.history.pushState({}, '', newUrl);
+
+    $.ajax({
+                type: "POST",
+                url:  "usertime",
+                data: JSON.stringify({
+                        "set_time":"A"+dt.getTime(),                   
+                    }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    //console.log(data.menber);
+                
+                }
+            });
+
+    var imgID = document.getElementById("menber").querySelectorAll("img");
+for(var i =0;i < imgID.length;i++){
+    imgID[i].addEventListener('click',function(e){
+        if(this.parentElement.style.backgroundColor != "red"){
+            if(self_select == ""){
+                self_select = this.id;
+                console.log(this.id);
+                console.log("測試"+self_select)
+                $.ajax({
+                    type: "POST",
+                    url:  "user",
+                    data: JSON.stringify({
+                        "user": this.id,
+                    
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("成功");
+                    },
+                    error: function () {
+                        // 请求失败后的处理
+                        console.log("请求失败");
+                    }
+                });
+                
+            }     
+        }else{
+                if(this.id == self_select){
+                this.style.opacity = 1;
+                self_select = "";
+                $.ajax({
+                    type: "POST",
+                    url:  "user",
+                    data: JSON.stringify({
+                        "user": this.id,
+                    
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("成功");
+                    },
+                    error: function () {
+                        // 请求失败后的处理
+                        console.log("请求失败");
+                    }
+                });
+                
+            }
+        }
+        
+        
+        console.log(this.id);
+        console.log("以選擇 : "+self_select);
+    })
+
+    document.getElementById(imgID[i].id).addEventListener('mousemove',function(event){
+        if(this.parentElement.style.backgroundColor == "red"){
+            var mouseX = event.clientX;
+            var mouseY = event.clientY;
+            document.getElementsByClassName('tooltips')[0].innerHTML = "已被選取"; 
+            document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+            document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+            document.getElementsByClassName('tooltips')[0].style.display = "block"
+        }else{
+            this.style.opacity = 0.5;
+        }              
+    });
+    document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
+        if(this.parentElement.style.backgroundColor == "red"){
+           
+            document.getElementsByClassName('tooltips')[0].style.display = "none"
+        }else{
+            this.style.opacity = 1;
+        }              
+    });
+}
+}
+
+function reset_menber(){
+    $.ajax({
+                type: "POST",
+                url:  "clear_user",
+               
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log("成功");
+                },
+                error: function () {
+                    // 请求失败后的处理
+                    console.log("请求失败");
+                }
+            });
+        console.log(this.id);
+}
+</script>
+</head>
+<!-- <div id="mask" style="text-align: center;width: 120%;height: 100vh;display:block;position: fixed;background-color: black;opacity: 0.7;">
+    <form>
+        Please Enter Your Name :
+
+    </form>
+
+</div> -->
+<div class="tooltips" style="display:none">
+    <span class="tooltiptext">Tooltip text</span>
+      
+  </div>
+	<body onload="getUrlC()">
+		<br/>
+		<h1 style="text-align:center ;">AEAS 太空競賽桌遊</h1>
+		<br/>
+	<div class="dik">
+		<table id="menber" class="nav navbar-nav" style="position:absolute;left:5%;width:90%;">
+            <tr>
+                <td>
+                    <img id="M1" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/29f3481e5d676be5eff67770ac5a2894052ab853/image.png" />
+                </td>
+                <td>
+                    <img id="M2" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/2cf455f0672d792b5014fc8f78fc973a0734db5a/image.png"/>
+                </td>
+                <td>
+                    <img id="M3" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/c2a12fe239f2e84565e0af942a0209dc37e75a47/image.png" />
+                </td>
+                <td>
+                    <img id="M4" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/95655260aa5147dcaf173571f8681e36c3f11c00/image.png" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <input type="button" class="btn btn-outline-success " value="開始" />
+                    <input type="button" class="btn btn-outline-danger" onclick="reset_menber()" value="Reset" />
+
+                </td>
+            </tr>
+		</table>
+		<br/>
+	</div>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	</body>
+
+</html>
