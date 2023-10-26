@@ -214,6 +214,9 @@ function reset_menber(){
             });
         console.log(this.id);
 }
+function runGame(){
+    window.location.href = "/";
+}
 </script>
 </head>
 <!-- <div id="mask" style="text-align: center;width: 120%;height: 100vh;display:block;position: fixed;background-color: black;opacity: 0.7;">
@@ -235,21 +238,21 @@ function reset_menber(){
 		<table id="menber" class="nav navbar-nav" style="position:absolute;left:5%;width:90%;">
             <tr>
                 <td>
-                    <img id="M1" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/29f3481e5d676be5eff67770ac5a2894052ab853/image.png" />
+                    <img id="M1" src="static/M1.png" />
                 </td>
                 <td>
-                    <img id="M2" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/2cf455f0672d792b5014fc8f78fc973a0734db5a/image.png"/>
+                    <img id="M2" src="static/M2.png"/>
                 </td>
                 <td>
-                    <img id="M3" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/c2a12fe239f2e84565e0af942a0209dc37e75a47/image.png" />
+                    <img id="M3" src="static/M3.png" />
                 </td>
                 <td>
-                    <img id="M4" src="http://192.168.2.95:7860/file=C:/Users/User/AppData/Local/Temp/gradio/95655260aa5147dcaf173571f8681e36c3f11c00/image.png" />
+                    <img id="M4" src="static/M4.png" />
                 </td>
             </tr>
             <tr>
                 <td colspan="4">
-                    <input type="button" class="btn btn-outline-success " value="開始" />
+                    <input type="button" class="btn btn-outline-success " value="開始" onclick="runGame()" />
                     <input type="button" class="btn btn-outline-danger" onclick="reset_menber()" value="Reset" />
 
                 </td>
