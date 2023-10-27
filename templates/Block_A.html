@@ -1,0 +1,155 @@
+<html>
+<head>
+
+ <style>
+	 #dil{
+	 	font-size:5vmin;
+	 }
+	 td{
+	 	font-size:5vmin;
+	 	border:0px solid;
+	 	padding:5px;
+	 	text-align:center;
+		 background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+         background-color: darkblue;
+       
+	 }
+     img{
+        width: 100%;
+        height: auto;
+     }
+ 
+	 table{
+   	border-collapse: collapse;
+   	width: 770px; 	
+   	/*自動斷行*/
+   	word-wrap: break-word;
+   	table-layout: fixed;
+   }
+   .tooltips {
+          position: fixed;
+          padding:10px;
+          background-color:white;
+          border-radius:10px;
+          border:3px solid;
+          height:auto;
+          width:10%;
+          top:100px;
+          left:10%;
+          z-index:999999999;
+          display:block;
+        }
+   body{
+	background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
+
+   }
+   a{
+	font-size: 4vmin;
+   }
+
+ </style>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    var hostname = "192.168.2.105:5000/"
+    var self_select = "";
+
+    console.log("test");
+    
+    $.ajax({
+                type: "GET",
+                url:  "menber",
+
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    //console.log(data.menber);
+                    var imgID = document.getElementById("menber").querySelectorAll("img");
+                    for(var i =0;i < imgID.length;i++){
+                            
+                            if(data.menber.length != 0){
+                               
+                                for(var di = 0;di<data.menber.length;di++){
+                                    if(data.menber[di] == imgID[i].id){
+                                        document.getElementById(data.menber[di]).style.opacity = 0.3;
+                                        document.getElementById(data.menber[di]).parentElement.style.backgroundColor = "red";
+
+                                    }                                
+                                }// console.log(document.getElementById(data.menber[di]));
+                               
+                            }
+                            
+                           
+                            
+                        }
+                        
+                    
+                    
+                },
+                error: function () {
+                    // 请求失败后的处理
+                    console.log("请求失败");
+                }
+            });
+}, 500);
+
+function getUrlC(){
+   
+}
+
+function reset_menber(){
+    $.ajax({
+                type: "POST",
+                url:  "clear_user",
+               
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log("成功");
+                },
+                error: function () {
+                    // 请求失败后的处理
+                    console.log("请求失败");
+                }
+            });
+        console.log(this.id);
+}
+function runGame(){
+    window.location.href = "/";
+}
+</script>
+</head>
+<!-- <div id="mask" style="text-align: center;width: 120%;height: 100vh;display:block;position: fixed;background-color: black;opacity: 0.7;">
+    <form>
+        Please Enter Your Name :
+
+    </form>
+
+</div> -->
+<div class="tooltips" style="display:none">
+    <span class="tooltiptext">Tooltip text</span>
+      
+  </div>
+	<body onload="getUrlC()">
+		<br/>
+		<h1 style="text-align:center ;">AEAS 太空競賽桌遊</h1>
+		<br/>
+	<div class="dik">
+		<table id="menber" class="nav navbar-nav" style="position:absolute;left:5%;width:90%;">
+            <tr>
+                <td>
+                    人員已額滿。
+                </td>
+            </tr>
+		</table>
+		<br/>
+	</div>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	</body>
+
+</html>

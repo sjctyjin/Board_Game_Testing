@@ -53,8 +53,11 @@
  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+    //全域變數
     var hostname = "192.168.2.105:5000/"
     var self_select = "";
+    var playerID = "";
+
 setInterval(() => {
     console.log("test");
     
@@ -65,18 +68,22 @@ setInterval(() => {
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (data) {
-                    //console.log(data.menber);
+                    //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
+                    console.log(data.menber);
+                    console.log(data.menber.playerID);
+                    var user_log = data.userlog;
                     var imgID = document.getElementById("menber").querySelectorAll("img");
-                    for(var i =0;i < imgID.length;i++){
+                    for(var i = 0;i < imgID.length;i++){
                             
-                            if(data.menber.length != 0){
+                            if(user_log.length != 0){
                                
-                                for(var di = 0;di<data.menber.length;di++){
-                                    if(data.menber[di] == imgID[i].id){
-                                        document.getElementById(data.menber[di]).style.opacity = 0.3;
-                                        document.getElementById(data.menber[di]).parentElement.style.backgroundColor = "red";
+                                for(var di = 0;di<user_log.length;di++){
+                                    console.log(document.getElementById(data.menber.user_log[di]));
+                                    // if(data.menber[di] == imgID[i].id){
+                                    //     document.getElementById(data.menber[di]).style.opacity = 0.3;
+                                    //     document.getElementById(data.menber[di]).parentElement.style.backgroundColor = "red";
 
-                                    }                                
+                                    // }                                
                                 }// console.log(document.getElementById(data.menber[di]));
                                
                             }
@@ -99,7 +106,8 @@ function getUrlC(){
     //初入頁面建立
     var dt = new Date();
     var urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('state', "A"+dt.getTime());
+    playerID = "A"+dt.getTime();
+    urlParams.set('state', playerID);
     var newUrl = window.location.pathname + '?' + urlParams.toString();
     window.history.pushState({}, '', newUrl);
 
@@ -107,7 +115,7 @@ function getUrlC(){
                 type: "POST",
                 url:  "usertime",
                 data: JSON.stringify({
-                        "set_time":"A"+dt.getTime(),                   
+                        "set_time":playerID,                   
                     }),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -129,7 +137,8 @@ for(var i =0;i < imgID.length;i++){
                     type: "POST",
                     url:  "user",
                     data: JSON.stringify({
-                        "user": this.id,
+                        "user": playerID,
+                        "selected": this.id,
                     
                     }),
                     contentType: "application/json; charset=utf-8",
