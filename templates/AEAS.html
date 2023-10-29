@@ -354,8 +354,26 @@
         //不鏽鋼係數1x初級推進(2) = 2
         //鋁合金係數1.5x初級推進(2) = 3
         //鈦合金係數2x初級推進(2) = 4
-        
+//         setInterval(() => {
+ 
+// }, 500);
+
         $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url:  "menber",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    for (var key in data["menber"]) {
+                        var value = data["menber"][key];
+                        if(key == localStorage.getItem('player')){
+                            console.log("測試"+value)  
+                            document.getElementById("avatar").src = "static/"+value+".png";
+                        }                          
+                    }
+                }
+            });
             var resource = document.getElementsByClassName('board_desk')[0];//.querySelectorAll('td')
             var missions = document.getElementsByClassName('mission')[0];//.querySelectorAll('td')
             for (var a = 0; a < resource.querySelectorAll('td').length; a++) {
@@ -580,7 +598,7 @@
                                     "<br/>需求燃料 : " +
 									needed_furl +
                                     "<br/>需求箭體 : " + needed.slice(1) +
-                                    "<br/>任務報酬 : " + this.querySelector('img').id;
+                                    "<br/>任務名稱 : " + this.querySelector('img').id;
                                 ;
                                 document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
                                 document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
@@ -768,7 +786,7 @@
                             event = event || window.event; // 兼容性處理
                             var mouseX = event.clientX;
                             var mouseY = event.clientY;
-                            document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求技術 : " + needed[0] + "/" + needed[1]+
+                            document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求任務 : " + needed[0] + "/" + needed[1]+
 
                                 "<br/>需求酬載 : "
                                 + needed[2] +
@@ -1133,7 +1151,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img class="img-thumbnail" style="height:auto;width:80%" src="https://d1grca2t3zpuug.cloudfront.net/2019/11/kuniwordd01.jpg" alt="Card Image" />
+                                        <img id="avatar" class="img-thumbnail" style="height:auto;width:60%" src="https://d1grca2t3zpuug.cloudfront.net/2019/11/kuniwordd01.jpg" alt="Card Image" />
                                     </td>
                                 </tr>
                             </table>
