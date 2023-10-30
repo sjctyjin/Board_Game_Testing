@@ -90,7 +90,8 @@
         .mission img{
             width:45%;
             height:auto;
-            position:relative;
+           
+            transition: transform 0.8s;
         }
         .hand-area td{
             padding:10px;
@@ -504,7 +505,7 @@
 									//document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
 									//document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                                     //document.getElementsByClassName('tooltips')[0].style.display = "block"
-                                    console.log(this);
+                                    //console.log(this);
                                     //this.style.transform = "translate(0px, -30px)";
                                     var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
                                     if (imgtran.style.transform == "") {
@@ -572,6 +573,22 @@
             }
             for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
                 if (a <= 5) {
+                    if (a == 4){
+                        //初階任務牌堆
+                        missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                            document.getElementById("mask").style.display="block";
+                            document.getElementById("mask").style.zIndex = "20";
+                            //document.getElementById("mask").style.zIndex = "20";
+                            document.getElementsByClassName("mission")[0].style.zIndex = "100";
+                            checkcover = 1;
+                            document.getElementById("mask").addEventListener("click",function(){
+                                document.getElementById("mask").style.display = "none";
+                                document.getElementById("mask").style.zIndex = "0";
+                                document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                checkcover = 0;
+                            })
+                        });
+                    }
                     if (a != 4 & a != 0 & a != 2) {
                         //洗牌分配任務
                         var Begineer = Preliminary.pop();
@@ -587,7 +604,7 @@
 						
                             //初階任務
                             missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
-                                console.log(this.querySelector('img').className);
+
                                 var needed = this.querySelector('img').className.split(' ');
 								var needed_furl = this.querySelector('img').alt;
                                 event = event || window.event; // 兼容性處理
@@ -662,8 +679,90 @@
                             });
 
                             missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                 
-                                   
+                                var rowIndex = this.parentNode.rowIndex;
+                                var cellIndex = this.cellIndex;
+                                console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
+                                if(checkcover == 1){
+                                        if(chec_cover_num.length != 0){
+                                            if(cellIndex == chec_cover_num[0][1]){
+                                                return;
+                                            }
+                                        
+                                        }
+                                        
+                                        var needed = this.querySelector('img').className.split(' ');
+								        var needed_furl = this.querySelector('img').alt;
+                                        if (needed.slice(1)[needed.slice(1).length - 1] == '') {
+                                            // 如果是空值，使用 pop 方法刪除最後一個元素                                           
+                                            needed.pop();
+                                            console.log( needed.slice(1))
+                                        }
+
+                                        Preliminary.unshift({"mission":this.querySelector('img').id,"Payload":needed[0],"Body":needed.slice(1),"Furl":needed_furl});
+                                       
+                                        //重新賦值
+                                        var Begineer = Preliminary.pop();
+                                        console.log(Begineer);
+                                        this.querySelector('img').className = "";
+                                        this.querySelector('img').id = Begineer["mission"];
+                                        this.querySelector('img').className += Begineer['Payload']+" ";
+                                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                            this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                        }
+                                        this.querySelector('img').alt = Begineer['Furl']
+                                        
+
+                                        missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
+                                        
+                                        switch (cellIndex) {
+                                            case 0: {
+                                                this.querySelector('img').style.transform = "translate(300%, 0%)";                             
+                                                break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+                                            }
+                                            case 1: {
+                                                this.querySelector('img').style.transform = "translate(0%, 100%)";                             
+                                                break;
+                                            }
+                                            case 2: {
+                                                this.querySelector('img').style.transform = "translate(-300%, 0%)";                             
+                                                break;
+                                            }
+                                          
+                                            default: {
+                                                break;
+                                            }
+                                            }
+                                    
+                                        var mission_ID = this.querySelector('img').id;
+                                        setTimeout(function() {
+                                                // sourced.style.transform = "translate(0px, 0px)";
+                                                console.log("ID = "+mission_ID);
+
+                                                console.log(document.getElementById(mission_ID));
+                                                document.getElementById(mission_ID).style.transform = "";
+                                                
+                                                missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
+                                                chec_cover_num.push([rowIndex,cellIndex]);
+                                                document.getElementById(mission_ID).src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                                console.log("蓋牌數"+chec_cover_num.length)
+                                                        setTimeout(function() {
+                                                        if(chec_cover_num.length == 2){
+                                                        
+                                                            //missions.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "static/mission.jpg";
+                                                            //missions.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "static/mission.jpg";
+                                                            missions.rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
+                                                            missions.rows[chec_cover_num[1][0]].cells[chec_cover_num[1][1]].querySelector('img').src = "static/mission.jpg";
+                                                            document.getElementById("mask").style.display = "none";
+                                                            document.getElementById("mask").style.zIndex = "0";
+                                                            document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                                            checkcover = 0;
+                                                            chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                        }
+                                                    }, 500);
+                                                }, 500);
+                                            
+                                        return;
+                                    }
                                     
                                     if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
                                     $('#mission_complete').show();
@@ -736,25 +835,26 @@
                                     
                                     setTimeout(function() {
                                           $('#mission_complete').animate({height:"0px"},2500);
-                                          setTimeout(function() {
-                                             $('#mission_complete').hide();
-                                            }, 2100);
-                                          
+                                            setTimeout(function() {
+                                                $('#mission_complete').hide();
+                                                }, 2100);
+                                                
 
-                                          //document.getElementById("mission_complete").style.display = "none";
-                                    }, 4000);
+                                                //document.getElementById("mission_complete").style.display = "none";
+                                            }, 4000);
 
-                                        var Begineer = Preliminary.pop();
-                                        console.log(Begineer);
-                                        this.querySelector('img').className = "";
-                                        this.querySelector('img').id = Begineer["mission"];
-                                        this.querySelector('img').className += Begineer['Payload']+" ";
-                                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                            this.querySelector('img').className += Begineer['Body'][clsname] + " ";
-                                        }
-                                        this.querySelector('img').alt = Begineer['Furl']
-                                        }
-                                    //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容
+                                            var Begineer = Preliminary.pop();
+                                            console.log(Begineer);
+                                            this.querySelector('img').className = "";
+                                            this.querySelector('img').id = Begineer["mission"];
+                                            this.querySelector('img').className += Begineer['Payload']+" ";
+                                            for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                                this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                            }
+                                            this.querySelector('img').alt = Begineer['Furl']
+                                    }
+                                    //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容 OK
+                                    //2023/10/30 TODO : 已完成初階任務蓋牌動作，換中階任務蓋牌
                                     });
                         }
                 }
@@ -972,7 +1072,7 @@
             
         </div>
         <div id="mask" style="width: 120%;height: 100vh;display:none;position: fixed;background-color: black;opacity: 0.7;">
-                    123              
+                                  
         </div>
         <div id="mission_complete">
             <main>
