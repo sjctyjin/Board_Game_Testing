@@ -225,7 +225,8 @@
     <script>
         //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容 OK
         //2023/10/30 TODO : 已完成初階任務蓋牌動作，換中階任務蓋牌 OK
-        //2023/10/31 TODO : 已完成4大動作設定，目前須增加反悔動作，將check_init 歸零 並重新選擇動作
+        //2023/10/31 TODO : 已完成4大動作設定，目前須增加反悔動作，將check_init 歸零 並重新選擇動作 OK
+        //2023/11/01 TODO : 每一個蓋牌動作完成後，如果只選擇蓋一張，可以點及黑幕退出，黑幕退出後需要歸零動作，如: 清除check_init狀態，卡面恢復
 
         //全域變數
         var userHandchoice = [];
@@ -363,6 +364,20 @@
 //         setInterval(() => {
  
 // }, 500);
+        function corverItem(){
+            //document.getElementById("mask").addEventListener("click",function(){
+                var yes = confirm("確定結束?");
+                if(yes){
+                    document.getElementById("mask").style.display = "none";
+                    document.getElementById("mask").style.zIndex = "0";
+                    document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                    checkcover = 0;
+                }else{ 
+                    
+                }
+                                        
+            //})
+        }
 
         $(document).ready(function () {
             $.ajax({
@@ -390,6 +405,7 @@
                     resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
 
                     resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                        console.log("狀態"+check_init)
                         if(check_init == 0){
 
                             document.getElementById("round_move_back").style.display = "block";
@@ -402,16 +418,12 @@
                             return;
                         }
 
-                        
-                        
-                        
-
-                        //$(this.querySelector('img')).css('height', '15vh');
                         var sourced = this.querySelector('img');
                         
                         var d = sourced.cloneNode(true);
-                        
-                        if(checkcover == 1){
+                        if(check_init == 2){
+
+                            if(checkcover == 1){
                             if(chec_cover_num.length != 0){
                                 if(sourced.alt == chec_cover_num[0]){
                                     return;
@@ -474,84 +486,92 @@
                                 }
                         
                             
-                            setTimeout(function() {
-                                    // sourced.style.transform = "translate(0px, 0px)";
-                                    sourced.style.transform = "";
-                                    
-                                    resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
-                                    chec_cover_num.push(sourced.alt);
-                                    sourced.src = "https://img.lovepik.com/element/40118/6391.png_300.png";
-                                    console.log("蓋牌數"+chec_cover_num.length)
-                                            setTimeout(function() {
-                                            if(chec_cover_num.length == 2){
-                                            
-                                                resource.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
-                                                resource.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
-                                                document.getElementById("mask").style.display = "none";
-                                                document.getElementById("mask").style.zIndex = "0";
-                                                document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
-                                                checkcover = 0;
-                                                chec_cover_num = [];//覆蓋完牌後，退出回合;
-                                                check_init = 0;//動作完成，退出回合;
-                                            }
+                                setTimeout(function() {
+                                        // sourced.style.transform = "translate(0px, 0px)";
+                                        sourced.style.transform = "";
+                                        
+                                        resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
+                                        chec_cover_num.push(sourced.alt);
+                                        sourced.src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                        console.log("蓋牌數"+chec_cover_num.length)
+                                                setTimeout(function() {
+                                                if(chec_cover_num.length == 2){
+                                                
+                                                    resource.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                                    resource.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                                    document.getElementById("mask").style.display = "none";
+                                                    document.getElementById("mask").style.zIndex = "0";
+                                                    document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                                                    checkcover = 0;
+                                                    chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                    check_init = 0;//動作完成，退出回合;
+                                                    document.getElementById("regret").style.display = "none";
+
+                                                }
+                                            }, 500);
                                         }, 500);
-                                    }, 500);
-                                   
-                            return;
-                        }
-                        
-                        sourced.id = SourceAray.pop();
-                        d.style.height = "18vh";
-                        d.style.transform = "";
-                        for (var i = 0; i < $(".hand-area td").length; i++) {
-                            if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
-                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);
-                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
-                                    event = event || window.event; // 兼容性處理
+                                    
+                                return;
+                            }
+                        }//選擇蓋資源牌
+                        if(check_init == 1){
+                            sourced.id = SourceAray.pop();
+                            d.style.height = "18vh";
+                            d.style.transform = "";
+                            for (var i = 0; i < $(".hand-area td").length; i++) {
+                                if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
+                                    document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);
+                                    document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
+                                        event = event || window.event; // 兼容性處理
 
-                                    var mouseX = event.clientX;
-                                    var mouseY = event.clientY;
-                                    document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
-                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
-                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
-                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
-                                });
+                                        var mouseX = event.clientX;
+                                        var mouseY = event.clientY;
+                                        document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
+                                        document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                        document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                        document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                    });
 
-                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
-									//event = event || window.event; // 兼容性處理
+                                    document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
+                                        if(check_init == 3){
+                                            var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
+                                            if (imgtran.style.transform == "") {
+                                            
+                                                if (userHandchoice.length < 3) {
+                                                    imgtran.style.transform = "translate(0px, -30px)";
+                                                    userHandchoice.push(imgtran.id);
+                                                    console.log(userHandchoice);
+                                                }
 
-									//var mouseX = event.clientX;
-									//var mouseY = event.clientY;
-									//document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id
-									//document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
-									//document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
-                                    //document.getElementsByClassName('tooltips')[0].style.display = "block"
-                                    //console.log(this);
-                                    //this.style.transform = "translate(0px, -30px)";
-                                    var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
-                                    if (imgtran.style.transform == "") {
-                                       
-                                        if (userHandchoice.length < 3) {
-											imgtran.style.transform = "translate(0px, -30px)";
-                                            userHandchoice.push(imgtran.id);
-                                            console.log(userHandchoice);
-										}
+                                            } else {
+                                                imgtran.style.transform = "";
+                                                userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
+                                                console.log(userHandchoice);
+                                            }
+                                        }
+                                        else if(check_init == 0){
 
-                                    } else {
-                                        imgtran.style.transform = "";
-										userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
-										console.log(userHandchoice);
-									}
+                                            document.getElementById("round_move_back").style.display = "block";
+                                            document.getElementById("round_move_back").style.zIndex = 99;
+                                            document.getElementById("round_move_font").style.display = "block";
+                                            document.getElementById("round_move_font").style.zIndex = 100;
+                                            return;
+                                        }
 
-								});
+                                    });
 
-                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
-                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
-                                });
-                                check_init = 0;
-                                break;
+                                    document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
+                                        document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                    });
+                                    check_init = 0;
+                                    document.getElementById("regret").style.display = "none";
+
+                                    break;
+                                }
                             }
                         }
+                        
+                        
                     });
                     resource.querySelectorAll('td')[a].addEventListener('mousemove', function (event) {
                         event = event || window.event; // 兼容性處理
@@ -585,12 +605,7 @@
                             //document.getElementById("mask").style.zIndex = "20";
                             document.getElementsByClassName("board_desk")[0].style.zIndex = "100";
                             checkcover = 1;
-                            document.getElementById("mask").addEventListener("click",function(){
-                            document.getElementById("mask").style.display = "none";
-                            document.getElementById("mask").style.zIndex = "0";
-                            document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
-                            checkcover = 0;
-                        })
+                            
                         }
                         
                     })
@@ -601,17 +616,27 @@
                     if (a == 4){
                         //初階任務牌堆
                         missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                            document.getElementById("mask").style.display="block";
-                            document.getElementById("mask").style.zIndex = "20";
-                            //document.getElementById("mask").style.zIndex = "20";
-                            document.getElementsByClassName("mission")[0].style.zIndex = "100";
-                            checkcover = 1;
-                            document.getElementById("mask").addEventListener("click",function(){
+                            if(check_init == 4){
+                                document.getElementById("mask").style.display="block";
+                                document.getElementById("mask").style.zIndex = "20";
+                                //document.getElementById("mask").style.zIndex = "20";
+                                document.getElementsByClassName("mission")[0].style.zIndex = "100";
+                                checkcover = 1;
+                                document.getElementById("mask").addEventListener("click",function(){
                                 document.getElementById("mask").style.display = "none";
                                 document.getElementById("mask").style.zIndex = "0";
                                 document.getElementsByClassName("mission")[0].style.zIndex = "0";
                                 checkcover = 0;
                             })
+                            }
+                            else if(check_init == 0){
+
+                                document.getElementById("round_move_back").style.display = "block";
+                                document.getElementById("round_move_back").style.zIndex = 99;
+                                document.getElementById("round_move_font").style.display = "block";
+                                document.getElementById("round_move_font").style.zIndex = 100;
+                                return;
+                            }
                         });
                     }
                     if (a != 4 & a != 0 & a != 2) {
@@ -709,7 +734,7 @@
                                 console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
                                 if(checkcover == 1){
                                         if(chec_cover_num.length != 0){
-                                            if(cellIndex == chec_cover_num[0][1]){
+                                            if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
                                                 return;
                                             }
                                         
@@ -785,7 +810,8 @@
                                                         }
                                                     }, 500);
                                                 }, 500);
-                                            
+                                        document.getElementById("regret").style.display = "none";//動作完成，上一步按鈕移除
+                                        check_init = 0;//動作完成，歸零
                                         return;
                                     }
                                     
@@ -859,45 +885,58 @@
                                     }
                                     
                                     setTimeout(function() {
-                                          $('#mission_complete').animate({height:"0px"},2500);
-                                            setTimeout(function() {
-                                                $('#mission_complete').hide();
-                                                }, 2100);
-                                                
+                                        $('#mission_complete').animate({height:"0px"},2500);
+                                        setTimeout(function() {
+                                            $('#mission_complete').hide();
+                                            }, 2100);
+                                            
 
-                                                //document.getElementById("mission_complete").style.display = "none";
-                                            }, 4000);
+                                            //document.getElementById("mission_complete").style.display = "none";
+                                    }, 4000);
 
-                                            var Begineer = Preliminary.pop();
-                                            console.log(Begineer);
-                                            this.querySelector('img').className = "";
-                                            this.querySelector('img').id = Begineer["mission"];
-                                            this.querySelector('img').className += Begineer['Payload']+" ";
-                                            for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                                this.querySelector('img').className += Begineer['Body'][clsname] + " ";
-                                            }
-                                            this.querySelector('img').alt = Begineer['Furl']
+                                    var Begineer = Preliminary.pop();
+                                    console.log(Begineer);
+                                    this.querySelector('img').className = "";
+                                    this.querySelector('img').id = Begineer["mission"];
+                                    this.querySelector('img').className += Begineer['Payload']+" ";
+                                    for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                        this.querySelector('img').className += Begineer['Body'][clsname] + " ";
                                     }
-                         
-                                    });
+                                    this.querySelector('img').alt = Begineer['Furl']
+                                    document.getElementById("regret").style.display = "none";
+
+                                }
+                            });
                         }
                 }
                 else {
                     if (a == 7){
-                        //初階任務牌堆
-                        missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                            document.getElementById("mask").style.display="block";
-                            document.getElementById("mask").style.zIndex = "20";
-                            //document.getElementById("mask").style.zIndex = "20";
-                            document.getElementsByClassName("mission")[0].style.zIndex = "100";
-                            checkcover = 1;
-                            document.getElementById("mask").addEventListener("click",function(){
-                                document.getElementById("mask").style.display = "none";
-                                document.getElementById("mask").style.zIndex = "0";
-                                document.getElementsByClassName("mission")[0].style.zIndex = "0";
-                                checkcover = 0;
-                            })
-                        });
+                        
+                            //初階任務牌堆
+                            missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                if(check_init == 4){
+                                    document.getElementById("mask").style.display="block";
+                                    document.getElementById("mask").style.zIndex = "20";
+                                    //document.getElementById("mask").style.zIndex = "20";
+                                    document.getElementsByClassName("mission")[0].style.zIndex = "100";
+                                    checkcover = 1;
+                                    document.getElementById("mask").addEventListener("click",function(){
+                                        document.getElementById("mask").style.display = "none";
+                                        document.getElementById("mask").style.zIndex = "0";
+                                        document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                        checkcover = 0;
+                                     })
+                                }
+                                else if(check_init == 0){
+
+                                    document.getElementById("round_move_back").style.display = "block";
+                                    document.getElementById("round_move_back").style.zIndex = 99;
+                                    document.getElementById("round_move_font").style.display = "block";
+                                    document.getElementById("round_move_font").style.zIndex = 100;
+                                    return;
+                                }
+                            });
+                        
                     }
                     if (a != 7 & a != 9 & a != 11) {
                         //missions.querySelectorAll('td')[a].querySelector('img').id = Intermediate.pop();
@@ -1011,7 +1050,7 @@
                                 console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
                                 if(checkcover == 1){
                                         if(chec_cover_num.length != 0){
-                                            if(cellIndex == chec_cover_num[0][1]){
+                                            if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
                                                 return;
                                             }
                                         
@@ -1090,7 +1129,9 @@
                                                         }
                                                     }, 500);
                                                 }, 500);
-                                            
+                                                document.getElementById("regret").style.display = "none";
+                                                check_init = 0;//動作完成，歸零
+    
                                         return;
                                     }
                             if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
@@ -1174,6 +1215,8 @@
                                 for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
                                     this.querySelector('img').className += Medium['Body'][clsname] + " ";
                                 }
+                                document.getElementById("regret").style.display = "none";
+
                             }
 
                         });
@@ -1186,6 +1229,7 @@
         function initPlay(it){
             console.log(it.id)
             if(it.id == "SelctSource"){
+                document.getElementById("regret").style.display = "block";
                 document.getElementById("round_move_back").style.display = "none";
                 document.getElementById("round_move_back").style.zIndex = 0;
                 document.getElementById("round_move_font").style.display = "none";
@@ -1195,6 +1239,7 @@
             }
             if(it.id == "CoverSource"){
                 check_init = 2;//蓋資源牌
+                document.getElementById("regret").style.display = "block";
                 document.getElementById("round_move_back").style.display = "none";
                 document.getElementById("round_move_back").style.zIndex = 0;
                 document.getElementById("round_move_font").style.display = "none";
@@ -1205,23 +1250,34 @@
             if(it.id == "ExcutMision"){
                 console.log(it.id+"測試")
                 check_init = 3;//執行任務
+                document.getElementById("regret").style.display = "block";
                 document.getElementById("round_move_back").style.display = "none";
                 document.getElementById("round_move_back").style.zIndex = 0;
                 document.getElementById("round_move_font").style.display = "none";
                 document.getElementById("round_move_font").style.zIndex = 0;
-                document.getElementsByClassName("board_desk")[0].querySelectorAll('td')[4].click();               
+                //document.getElementsByClassName("mission")[0].querySelectorAll('td')[4].click();               
 
             }
             if(it.id == "CoverMision"){
                 check_init = 4;//蓋資源牌
+                document.getElementById("regret").style.display = "block";
                 document.getElementById("round_move_back").style.display = "none";
                 document.getElementById("round_move_back").style.zIndex = 0;
                 document.getElementById("round_move_font").style.display = "none";
                 document.getElementById("round_move_font").style.zIndex = 0;
-                document.getElementsByClassName("board_desk")[0].querySelectorAll('td')[4].click();               
+                document.getElementsByClassName("mission")[0].querySelectorAll('td')[7].click();               
 
             }
         }  
+
+        function backstep(){
+            check_init = 0;
+            document.getElementById("round_move_back").style.display = "block";
+            document.getElementById("round_move_back").style.zIndex = 99;
+            document.getElementById("round_move_font").style.display = "block";
+            document.getElementById("round_move_font").style.zIndex = 100;
+            document.getElementById("regret").style.display = "none";
+        }
 
 	</script>
 </head>
@@ -1232,7 +1288,7 @@
             
         </div>
         
-        <div id="mask" style="width: 100%;height: 100vh;display:none;position: fixed;background-color: black;opacity: 0.7;">
+        <div id="mask" onclick="corverItem()" style="width: 100%;height: 100vh;display:none;position: fixed;background-color: black;opacity: 0.7;">
             <input  style="position: relative;text-align: center;width: 5%;left:95%;height: 10vh;font-size: 3vmin;"  class="btn btn-outline-danger" value="X" />
         </div>
 
@@ -1241,7 +1297,7 @@
         </div>
         <div id="round_move_font" style="width: 100%;height: 100vh;display:none;position: fixed;opacity: 1;z-index: 100;">
 
-               <table id="initeveryround" style="position: relative;top:30vh;width: 80%;left: 10%;padding: 5px;">
+               <table id="initeveryround" style="position: relative;top:25vh;width: 80%;left: 10%;padding: 5px;">
                 <tr>
                     <td colspan="4" style="font-size: 6vmin;color: white;text-align: center;">
                         <h1>Your turn</h1>
@@ -1418,6 +1474,8 @@
                                 <td></td>
                             </tr>
                         </table>
+                        <input id="regret" class="btn btn-warning" type="button" value="上一步" onclick="backstep()" style="position: absolute;bottom: 0px;height: 15vh;width: 100%;left: 0%;color: black;font-weight: bold;font-size: 3vmin;display: none;" />
+
                     </div>
                 </div>
             </div>
@@ -1432,7 +1490,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img id="avatar"  class="img-thumbnail" style="height:auto;width:100%" src="https://d1grca2t3zpuug.cloudfront.net/2019/11/kuniwordd01.jpg" alt="Card Image" />
+                                        <img id="avatar"  class="img-thumbnail" style="height:auto;width:80%" src="https://d1grca2t3zpuug.cloudfront.net/2019/11/kuniwordd01.jpg" alt="Card Image" />
                                     </td>
                                 </tr>
                                 
