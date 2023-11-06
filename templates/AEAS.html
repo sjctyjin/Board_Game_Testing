@@ -13,7 +13,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-image:url('https://pic.616pic.com/bg_w1180/00/03/86/McRK1UgLd3.jpg');
+            background-image:url('static/back.jpg');
             background-attachment: scroll;
             background-repeat: no-repeat; 
             background-blend-mode: multiply;
@@ -24,6 +24,7 @@
         .row {
             display: flex;
             height: 50vh;
+            background-color:transparent;
         }
         .col-md-2 {
             display: flex;
@@ -32,18 +33,19 @@
         }
 
         .col-md-2 .card {
-            
             flex: 1;
         }
          .col-md-8 {
             display: flex;
             flex-direction: column;
             height:70vh;
+            
         }
         .board_desk{
             position:relative;
             width:100%;
             left:0%;
+            
         }
         .board_desk img{
             width:100%;
@@ -69,15 +71,49 @@
             width:100%;
             height:auto;
             left:0%;
+            
           
         }
         .main_area{
              /*background-color:rgba(255,255,255,1);*/
             /* background-image:url('https://4.jimtechtalks.top/file=D:/Github/stable-diffusion-webui/outputs/txt2img-images/2023-10-27/00072-4076367103.png?1698377675.4982777'); */
 
-            background-image:url('https://4.jimtechtalks.top/file=D:/Github/stable-diffusion-webui/outputs/img2img-images/2023-10-27/00004-2133176240.png?1698383054.8760357');
+            /* background-image:url('static/main.jpg');
+            background-size:contain;
+            background-repeat:no-repeat; */
+            
+            background-color:transparent; 
+        }
+        .self-area{
+            /* background-image:url('static/right.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:contain; */
+            /* background-color:transparent; */
+            background-color:rgba(255,255,255,0.2);
+        }
+        .hand-area-T{
+            
+            background-image:url('static/hand.jpg');
+            background-attachment: scroll;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
             background-size:cover;
-            background-repeat:no-repeat;
+            border-top: 5px solid darkgray;
+            background-color:rgba(255,255,255,0.2);
+        }
+        .other-player{
+            /* background-image:url('static/left.jpg');
+            background-attachment: scroll;
+            background-size:contain;
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center; */
+            background-color:rgba(255,255,255,0.2);
+
         }
         .mission td{
             text-align:center;
@@ -85,7 +121,7 @@
             border:0px solid;
             /* background-color:rgba(100,100,255,0.1); */
             border-radius:20px;
-            color: white;
+            /* color: white; */
         }
             
         .mission img{
@@ -130,36 +166,13 @@
             border:1px solid;
         }
 
-        .self-area{
-            background-image:url('https://img.lovepik.com/background/20211101/medium/lovepik-line-background-mobile-wallpaper-image_400567675.jpg');
-            background-attachment: scroll;
-            background-repeat: no-repeat; 
-            background-blend-mode: multiply;
-            background-position:center;
-            background-size:cover;
-        }
+        
+
         .self-area-T{
-           background-color:rgba(255,255,255,0.1);
+           background-color:rgba(255,255,255,0.2);
            text-align:center;
         }
-        .hand-area-T{
-            
-            background-image:url('https://pic.616pic.com/bg_w1180/00/04/51/GQLi9NAjH6.jpg');
-            background-attachment: scroll;
-            background-repeat: no-repeat; 
-            background-blend-mode: multiply;
-            background-position:center;
-            background-size:cover;
-        }
-        .other-player{
-            background-image:url('https://img.lovepik.com/background/20211101/medium/lovepik-technology-space-mobile-phone-wallpaper-background-image_400669533.jpg');
-            background-attachment: scroll;
-            background-repeat: no-repeat; 
-            background-blend-mode: multiply;
-            background-position:center;
-            background-size:cover;
-        }
-
+       
 
         main {
             text-align: center;
@@ -221,7 +234,11 @@
             top: 60vh;
             z-index: 9;
           }
-
+        #player_zone{
+            height: 70vh;
+            overflow:hidden;
+        }
+       
         #player_zone:hover{
             overflow-y: scroll;
         }
@@ -229,12 +246,13 @@
         .OtherPlayer img:hover{
             width: 100%;
         }
+        
           
         .triangle {
             position: relative;
             width: 0;
             height: 0;
-            top: -10px;
+            top: 0px;
             left: 45%;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
@@ -1471,20 +1489,20 @@
          <div class="container-fluid">
         <div class="row">
         
-            <div class="col-md-2" id="player_zone" >
-                <div class="card playerZone" style="position: relative;left: -5%;">
-                    <div class="card-body other-player" style="width: 110%;" >
+            <div class="col-md-2" id="player_zone" style="background-color:transparent;" >
+                <div class="card playerZone" style="position: relative;left: -5%;background-color:transparent;">
+                    <div class="card-body other-player" style="width: 110%;height: 70vh;" >
                         <h5 class="card-title">其他玩家資訊</h5>
                         <!-- 其他玩家資訊內容 -->
                     
                 
                     </div> 
-            </div>
+                </div>
             </div>
             <div class="col-md-8">
 
-                <div class="card" >
-                    <div class="card-body main_area" style="height:85vh">
+                <div class="card" style="background-color:transparent;" >
+                    <div class="card-body main_area" style="height:70vh;">
                         <div class="row">
                             
 
@@ -1620,8 +1638,8 @@
                     </div>
                 </div>
             </div>
-             <div class="col-md-12" style="position:relative;height:30vh;bottom:0px;width:100%;background:radial-gradient(ellipse at center,#075e8e,#14142e);">
-                    <div class="row hand-area-T" style="bottom:0px;position:absolute;border:0px red solid;height:30vh;width:100%">
+             <div class="col-md-12" style="position:relative;height:30vh;bottom:0px;width:100%;">
+                    <div class="row hand-area-T" style="bottom:0px;position:absolute;height:30vh;width:100%">
                         <div class="col-md-2" style="border:0px yellow solid;height:30vh;text-align:center">
                             <table>
                                 <tr>
