@@ -30,6 +30,7 @@
             display: flex;
             flex-direction: column;
             height:70vh;
+            background-color:rgba(255, 255, 255, 0.05);
         }
 
         .col-md-2 .card {
@@ -39,6 +40,9 @@
             display: flex;
             flex-direction: column;
             height:70vh;
+            background-color:rgba(255, 255, 255, 0.05);
+            border-left: 5px solid gray;
+            border-right: 5px solid gray;
             
         }
         .board_desk{
@@ -91,8 +95,8 @@
             background-blend-mode: multiply;
             background-position:center;
             background-size:contain; */
-            /* background-color:transparent; */
-            background-color:rgba(255,255,255,0.2);
+            background-color:transparent;
+            /* background-color:rgba(255,255,255,0.2); */
         }
         .hand-area-T{
             
@@ -106,14 +110,23 @@
             background-color:rgba(255,255,255,0.2);
         }
         .other-player{
+            /* border: 5px solid; */
             /* background-image:url('static/left.jpg');
             background-attachment: scroll;
             background-size:contain;
             background-repeat: no-repeat; 
             background-blend-mode: multiply;
             background-position:center; */
-            background-color:rgba(255,255,255,0.2);
+            /* background-color:rgba(255,255,255,0.2); */
 
+        }
+        #ssdis{
+            background-image:url('static/main.jpg');
+            background-repeat: no-repeat; 
+            background-blend-mode: multiply;
+            background-position:center;
+            background-size:cover;
+            border: 5px solid white;
         }
         .mission td{
             text-align:center;
@@ -169,8 +182,9 @@
         
 
         .self-area-T{
-           background-color:rgba(255,255,255,0.2);
+           /* background-color:rgba(255,255,255,0.2); */
            text-align:center;
+           border: 0px solid green;
         }
        
 
@@ -256,7 +270,7 @@
             left: 45%;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
-            border-bottom: 50px solid red; /* 您可以更改顏色 */
+            border-bottom: 50px solid rgba(14, 108, 230, 0.8); /* 您可以更改顏色 */
         }
         #orderSheet img{
             width: 100%;
@@ -1366,7 +1380,7 @@
                     
                 }else{
                     $('#ssdis').animate({top:"0px"},1000);
-                    $('.triangle').animate({top:"-30px"},1000);
+                    $('.triangle').animate({top:"0px"},1000);
                     $('#ssdis').hide(10);
                     console.log("123")
 
@@ -1489,8 +1503,8 @@
          <div class="container-fluid">
         <div class="row">
         
-            <div class="col-md-2" id="player_zone" style="background-color:transparent;" >
-                <div class="card playerZone" style="position: relative;left: -5%;background-color:transparent;">
+            <div class="col-md-2" id="player_zone">
+                <div class="card playerZone" style="position: relative;left: -5%;background-color:transparent;border: 0px solid green;">
                     <div class="card-body other-player" style="width: 110%;height: 70vh;" >
                         <h5 class="card-title">其他玩家資訊</h5>
                         <!-- 其他玩家資訊內容 -->
@@ -1501,7 +1515,7 @@
             </div>
             <div class="col-md-8">
 
-                <div class="card" style="background-color:transparent;" >
+                <div class="card" style="background-color:transparent;border: 0px solid green;" >
                     <div class="card-body main_area" style="height:70vh;">
                         <div class="row">
                             
@@ -1570,7 +1584,7 @@
                             </table>
                             </div>
                             <div class="triangle"></div>
-                            <div id="ssdis" style="position: relative;background-color: white;width: 100%;height: 30vh;top: 0px;display: none;border-radius: 25px;">
+                            <div id="ssdis" style="position: relative;width: 100%;height: 30vh;top: 0px;display: none;border-radius: 25px;">
                                 <table id="orderSheet" style="position: relative;width: 80%;left: 10%;top:20px;">
                                     <tr>
                                         <td>玩家</td>
@@ -1597,7 +1611,7 @@
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="card self-area">
+                <div class="card self-area" style="border: 0px solid green;">
                     <div class="card-body self-area-T">
                         <h5 class="card-title btn btn-light" >技術</h5>
                         <!-- 自己的頭像與手牌內容 -->
