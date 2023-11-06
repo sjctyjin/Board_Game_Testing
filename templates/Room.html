@@ -11,7 +11,7 @@
 	 	padding:5px;
 	 	text-align:center;
 		 background-image: linear-gradient(to top, #84C1FF	, #84C1FF	);
-         background-color: darkblue;
+         /* background-color: darkblue;  */
        
 	 }
      img{
@@ -79,17 +79,23 @@ setInterval(() => {
                     var checkM2 = 0;
                     var checkM3 = 0;
                     var checkM4 = 0;
+                    var checkM5 = 0;
+                    var checkM6 = 0;
                     for(var i = 0;i < imgID.length;i++){
                         for (var key in data["menber"]) {
                             var value = data["menber"][key];
                             console.log("Key: " + key + ", Value: " + value);
+                            
                             if(value == imgID[i].id){
                                 console.log("比對成功 ");
+                                console.log("比對成功 :"+value);
 
                                 if(value == "M1") checkM1 = 1;
                                 if(value == "M2") checkM2 = 1;
                                 if(value == "M3") checkM3 = 1;
                                 if(value == "M4") checkM4 = 1;
+                                if(value == "M5") checkM5 = 1;
+                                if(value == "M6") checkM6 = 1;
 
                                 document.getElementById(imgID[i].id).style.opacity = 0.3;
                                 document.getElementById(imgID[i].id).parentElement.style.backgroundColor = "red";
@@ -122,8 +128,21 @@ setInterval(() => {
                         document.getElementById("M4").style.opacity = 1;
                         document.getElementById("M4").parentElement.style.backgroundColor = "";
                     }
+                    if(checkM5 == 0){
+                        console.log("M5未選取")
+                        document.getElementById("M5").style.opacity = 1;
+                        document.getElementById("M5").parentElement.style.backgroundColor = "";
+                    }
+                    if(checkM6 == 0){
+                        console.log("M6未選取")
+                        document.getElementById("M6").style.opacity = 1;
+                        document.getElementById("M6").parentElement.style.backgroundColor = "";
+                    }
                     if(data.states == "1"){
                         window.location.href = "/";
+                    }else if(data.states == "2"){
+                        localStorage.removeItem('player');
+                        window.location.href = "/closestate";
                     }
                 }
             });
@@ -139,120 +158,105 @@ function getUrlC(){
     // window.history.pushState({}, '', newUrl);
     if (typeof(Storage) !== "undefined") {
     // 如果 localStorage 中沒有我們設定的 session
-        if (!localStorage.getItem('player')) {
-            // 設置一個新的 session
-            playerID = "A"+dt.getTime();
-            localStorage.setItem('player', playerID);
-            $.ajax({
-                type: "POST",
-                url:  "usertime",
-                data: JSON.stringify({
-                        "set_time":playerID,                   
-                    }),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    //console.log(data.menber);             
-                }
-            });
+            if (!localStorage.getItem('player')) {
+                document.getElementById("round_move_back").style.display = "block";
+                document.getElementById("round_move_font").style.display = "block";
+            }
+        }
 
+        if(localStorage.getItem('player')){
+            playerID = localStorage.getItem('player');
+
+            var imgID = document.getElementById("menber").querySelectorAll("img");
+            for(var i =0;i < imgID.length;i++){
+                imgID[i].addEventListener('click',function(e){
+                    if(this.parentElement.style.backgroundColor != "red"){
+                        if(self_select == ""){
+                        
+                            console.log(this.id);
+                            console.log("測試"+self_select)
+                            $.ajax({
+                                type: "POST",
+                                url:  "user",
+                                data: JSON.stringify({
+                                    "user": playerID,
+                                    "selected": this.id,
+                                
+                                }),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log("成功");
+                                },
+                                error: function () {
+                                    // 请求失败后的处理
+                                    console.log("请求失败");
+                                }
+                            });
+                            
+                        }     
+                    }
+                    else{
+                            if(this.id == self_select){
+                            this.style.opacity = 1;
+                            this.parentElement.style.backgroundColor = "";
+                            self_select = "";
+                            document.getElementsByClassName('tooltips')[0].style.display = "none"
+                            $.ajax({
+                                type: "POST",
+                                url:  "user",
+                                data: JSON.stringify({
+                                    "user": playerID,                   
+                                }),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log("成功");
+                                    console.log("解除");
+                                },
+                                error: function () {
+                                    // 请求失败后的处理
+                                    console.log("请求失败");
+                                }
+                            });
+                            
+                        }
+                    }
+                    
+                    
+                    console.log(this.id);
+                    console.log("以選擇 : "+self_select);
+                })
+
+                document.getElementById(imgID[i].id).addEventListener('mousemove',function(event){
+                    if(this.parentElement.style.backgroundColor == "red"){
+                        var mouseX = event.clientX;
+                        var mouseY = event.clientY;
+
+                        document.getElementsByClassName('tooltips')[0].innerHTML = "已被選取"; 
+                        if(self_select == this.id){
+                            document.getElementsByClassName('tooltips')[0].innerHTML = "您選取的"; 
+                        }
+                        document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                        document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                        document.getElementsByClassName('tooltips')[0].style.display = "block"
+                    }else{
+                        this.style.opacity = 0.5;
+                    }              
+                });
+                document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
+                    if(this.parentElement.style.backgroundColor == "red"){
+                    
+                        document.getElementsByClassName('tooltips')[0].style.display = "none"
+                    }else{
+                        this.style.opacity = 1;
+                    }              
+                });
+            }
         }
         // 在控制台上印出 session 的值
-            console.log(localStorage.getItem('player'));
     } 
-    else {
-        console.log("抱歉，您的瀏覽器不支持 Web Storage...");
-    }
     
-    console.log("玩家ID : "+playerID)
-    playerID = localStorage.getItem('player');
-
-    var imgID = document.getElementById("menber").querySelectorAll("img");
-for(var i =0;i < imgID.length;i++){
-    imgID[i].addEventListener('click',function(e){
-        if(this.parentElement.style.backgroundColor != "red"){
-            if(self_select == ""){
-            
-                console.log(this.id);
-                console.log("測試"+self_select)
-                $.ajax({
-                    type: "POST",
-                    url:  "user",
-                    data: JSON.stringify({
-                        "user": playerID,
-                        "selected": this.id,
-                    
-                    }),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function (data) {
-                        console.log("成功");
-                    },
-                    error: function () {
-                        // 请求失败后的处理
-                        console.log("请求失败");
-                    }
-                });
-                
-            }     
-        }
-        else{
-                if(this.id == self_select){
-                this.style.opacity = 1;
-                this.parentElement.style.backgroundColor = "";
-                self_select = "";
-                document.getElementsByClassName('tooltips')[0].style.display = "none"
-                $.ajax({
-                    type: "POST",
-                    url:  "user",
-                    data: JSON.stringify({
-                        "user": playerID,                   
-                    }),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function (data) {
-                        console.log("成功");
-                    },
-                    error: function () {
-                        // 请求失败后的处理
-                        console.log("请求失败");
-                    }
-                });
-                
-            }
-        }
-        
-        
-        console.log(this.id);
-        console.log("以選擇 : "+self_select);
-    })
-
-    document.getElementById(imgID[i].id).addEventListener('mousemove',function(event){
-        if(this.parentElement.style.backgroundColor == "red"){
-            var mouseX = event.clientX;
-            var mouseY = event.clientY;
-
-            document.getElementsByClassName('tooltips')[0].innerHTML = "已被選取"; 
-            if(self_select == this.id){
-                document.getElementsByClassName('tooltips')[0].innerHTML = "您選取的"; 
-            }
-            document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
-            document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
-            document.getElementsByClassName('tooltips')[0].style.display = "block"
-        }else{
-            this.style.opacity = 0.5;
-        }              
-    });
-    document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
-        if(this.parentElement.style.backgroundColor == "red"){
-           
-            document.getElementsByClassName('tooltips')[0].style.display = "none"
-        }else{
-            this.style.opacity = 1;
-        }              
-    });
-}
-}
 
 function reset_menber(){
     self_select = "";
@@ -287,6 +291,139 @@ function runGame(){
         });
     window.location.href = "/";
 }
+
+function senttoapi(playerid){
+    if (typeof(Storage) !== "undefined") {
+    // 如果 localStorage 中沒有我們設定的 session
+        if (!localStorage.getItem('player')) {
+            // 設置一個新的 session
+            playerID = document.getElementById("SelctSource").value;
+            localStorage.setItem('player', playerID);
+            $.ajax({
+                type: "POST",
+                url:  "usertime",
+                data: JSON.stringify({
+                        "set_time":playerID,                   
+                    }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log(data.result);    
+                    if(data.result == "R"){
+                        alert("ID重複，請重新建立ID");
+                        localStorage.removeItem('player');
+                        document.getElementById("round_move_back").style.display = "block";
+                        document.getElementById("round_move_font").style.display = "block";
+                        return;
+                    }else{
+                        document.getElementById("round_move_back").style.display = "none";
+                        document.getElementById("round_move_font").style.display = "none";
+                    }
+                    
+                }
+            });
+            document.getElementById("round_move_back").style.display = "none";
+            document.getElementById("round_move_font").style.display = "none";
+
+        }
+        // 在控制台上印出 session 的值
+            console.log(localStorage.getItem('player'));
+    } 
+    else {
+        console.log("抱歉，您的瀏覽器不支持 Web Storage...");
+    }
+    
+    console.log("玩家ID : "+playerID);
+    playerID = localStorage.getItem('player');
+
+            var imgID = document.getElementById("menber").querySelectorAll("img");
+            for(var i =0;i < imgID.length;i++){
+                imgID[i].addEventListener('click',function(e){
+                    if(this.parentElement.style.backgroundColor != "red"){
+                        if(self_select == ""){
+                        
+                            console.log(this.id);
+                            console.log("測試"+self_select)
+                            $.ajax({
+                                type: "POST",
+                                url:  "user",
+                                data: JSON.stringify({
+                                    "user": playerID,
+                                    "selected": this.id,
+                                
+                                }),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log("成功");
+                                },
+                                error: function () {
+                                    // 请求失败后的处理
+                                    console.log("请求失败");
+                                }
+                            });
+                            
+                        }     
+                    }
+                    else{
+                            if(this.id == self_select){
+                            this.style.opacity = 1;
+                            this.parentElement.style.backgroundColor = "";
+                            self_select = "";
+                            document.getElementsByClassName('tooltips')[0].style.display = "none"
+                            $.ajax({
+                                type: "POST",
+                                url:  "user",
+                                data: JSON.stringify({
+                                    "user": playerID,                   
+                                }),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log("成功");
+                                    console.log("解除");
+                                },
+                                error: function () {
+                                    // 请求失败后的处理
+                                    console.log("请求失败");
+                                }
+                            });
+                            
+                        }
+                    }
+                    
+                    
+                    console.log(this.id);
+                    console.log("以選擇 : "+self_select);
+                })
+
+                document.getElementById(imgID[i].id).addEventListener('mousemove',function(event){
+                    if(this.parentElement.style.backgroundColor == "red"){
+                        var mouseX = event.clientX;
+                        var mouseY = event.clientY;
+
+                        document.getElementsByClassName('tooltips')[0].innerHTML = "已被選取"; 
+                        if(self_select == this.id){
+                            document.getElementsByClassName('tooltips')[0].innerHTML = "您選取的"; 
+                        }
+                        document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                        document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                        document.getElementsByClassName('tooltips')[0].style.display = "block"
+                    }else{
+                        this.style.opacity = 0.5;
+                    }              
+                });
+                document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
+                    if(this.parentElement.style.backgroundColor == "red"){
+                    
+                        document.getElementsByClassName('tooltips')[0].style.display = "none"
+                    }else{
+                        this.style.opacity = 1;
+                    }              
+                });
+            }
+    
+}
 </script>
 </head>
 <!-- <div id="mask" style="text-align: center;width: 120%;height: 100vh;display:block;position: fixed;background-color: black;opacity: 0.7;">
@@ -304,6 +441,27 @@ function runGame(){
 		<br/>
 		<h1 style="text-align:center ;">AEAS 太空競賽桌遊</h1>
 		<br/>
+
+        <div id="round_move_back" style="width: 100%;height: 100vh;display:none;position: fixed;background-color: black;opacity: 0.7;z-index: 99;top: 0px;">
+                                  
+        </div>
+        <div id="round_move_font" style="width: 100%;height: 100vh;display:none;position: fixed;opacity: 1;z-index: 100;">
+
+               <table id="initeveryround" style="position: relative;top: 10px;width: 80%;left: 10%;padding: 5px;">
+                    <tr>
+                        <td colspan="4" style="font-size: 6vmin;color: white;text-align: center;">
+                            <h1>Welcome to this game</h1>
+                            <h1> 請輸入遊戲ID </h1>
+                        </td>
+                    </tr>
+                    <tr >
+                        <td style="padding: 20px;"><input id="SelctSource" type="text" style="text-align: center;font-size: 5vmin;" /></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px;"><input id="sendtoapi" type="button" style="text-align: center;width: 20%;font-size: 4vmin;" value="送出" onclick="senttoapi(this)"  class="btn btn-success" /></td>
+                    </tr>
+               </table>                   
+        </div>
 	<div class="dik">
 		<table id="menber" class="nav navbar-nav" style="position:absolute;left:15%;width:70%;">
             <tr>

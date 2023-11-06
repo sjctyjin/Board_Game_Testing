@@ -67,8 +67,9 @@
         .mission{
             position:relative;
             width:100%;
-            height:10vh;
+            height:auto;
             left:0%;
+          
         }
         .main_area{
              /*background-color:rgba(255,255,255,1);*/
@@ -88,9 +89,9 @@
         }
             
         .mission img{
-            width:45%;
+            width:8vh;
             height:auto;
-           
+            position: relative;
             transition: transform 0.8s;
         }
         .hand-area td{
@@ -220,19 +221,48 @@
             top: 60vh;
             z-index: 9;
           }
+
+        #player_zone:hover{
+            overflow-y: scroll;
+        }
+       
+        .OtherPlayer img:hover{
+            width: 100%;
+        }
           
+        .triangle {
+            position: relative;
+            width: 0;
+            height: 0;
+            top: -10px;
+            left: 45%;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 50px solid red; /* 您可以更改顏色 */
+        }
+        #orderSheet img{
+            width: 100%;
+            position: relative;
+            transition: transform 0.8s;
+        }
+        #orderSheet td{
+            text-align: center;
+        
+        }
+    </style>
     </style>
     <script>
         //2023/10/23 TODO : 任務執行完成後，要替換任務需求內容 OK
         //2023/10/30 TODO : 已完成初階任務蓋牌動作，換中階任務蓋牌 OK
         //2023/10/31 TODO : 已完成4大動作設定，目前須增加反悔動作，將check_init 歸零 並重新選擇動作 OK
         //2023/11/01 TODO : 每一個蓋牌動作完成後，如果只選擇蓋一張，可以點及黑幕退出，黑幕退出後需要歸零動作，如: 清除check_init狀態，卡面恢復
-
+        // 2023/11/02 TODO : 完成其他玩家動態區，完成後開始規劃玩家互動部分
         //全域變數
         var userHandchoice = [];
         var checkcover = 0;//當使用者點擊覆蓋資源時為1
         var chec_cover_num = [];//計算使用者點擊覆蓋資源牌數
         var check_init = 0;//判斷使用者選擇動作，若未選擇則為0;
+        var check_ended = 0;//判斷使用者是否完成動作;0代表已完成
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -361,25 +391,90 @@
         //不鏽鋼係數1x初級推進(2) = 2
         //鋁合金係數1.5x初級推進(2) = 3
         //鈦合金係數2x初級推進(2) = 4
-//         setInterval(() => {
- 
-// }, 500);
-        function corverItem(){
-            //document.getElementById("mask").addEventListener("click",function(){
-                var yes = confirm("確定結束?");
-                if(yes){
-                    document.getElementById("mask").style.display = "none";
-                    document.getElementById("mask").style.zIndex = "0";
-                    document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
-                    checkcover = 0;
-                }else{ 
+        setInterval(() => {
+            
+            $.ajax({
+                type: "POST",
+                url:  "round",
+                data: JSON.stringify({
+                    "user_state": check_ended,
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
+                    console.log("使用者排序 : "+data["order_now"]);
+                    var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
+
+                    for (var key = 0;key < orderarea_img.length;key++ ) {
+                        if(orderarea_img[key].alt == data["order_now"]){
+                            // $("#" + orderarea_img[key].id).animate({ top: "-10px" });
+                            // $("#" + orderarea_img[key].id).animate({ top: "0px" });
+                            document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "red"
+
+                            if(check_ended == 1){
+                                check_ended = 0;
+                            }
+                            //break;
+                        }else{
+                            // $("#" + orderarea_img[key].id).css("top","0px" );
+                            // $("#" + orderarea_img[key].id).stop();
+                            document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "black"
+
+                        }
+                    }
+                       
                     
                 }
-                                        
-            //})
+            });
+    }, 500);
+        function corverItem(){//關閉黑屏
+                var yes = confirm("確定結束回合?");
+                if(yes){
+                    if(chec_cover_num.length == 0){
+                        var Passyes = confirm("未覆蓋任何卡牌，確定要結束回合?");
+                        if(Passyes){
+                            document.getElementById("mask").style.display = "none";
+                            document.getElementById("mask").style.zIndex = "0";
+                            document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                            checkcover = 0;
+                            document.getElementById("regret").style.display = "none";
+                            check_init = 0;//動作完成，退出回合;
+                            console.log("退出");
+                            check_ended = 1;
+                        }
+                    }
+                    else if(chec_cover_num[0].length == 1){
+                        //覆蓋資源
+                        document.getElementsByClassName("board_desk")[0].querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                        document.getElementById("mask").style.display = "none";
+                        document.getElementById("mask").style.zIndex = "0";
+                        document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                        checkcover = 0;
+                        chec_cover_num = [];//覆蓋完牌後，退出回合;
+                        check_init = 0;//動作完成，退出回合;
+                        document.getElementById("regret").style.display = "none";
+                        check_ended = 1;
+                    }
+                    else if(chec_cover_num[0].length == 2){
+                        //覆蓋任務
+                        console.log(chec_cover_num[0][0],chec_cover_num[0][1]);
+                        document.getElementsByClassName("mission")[0].rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
+                        document.getElementById("mask").style.display = "none";
+                        document.getElementById("mask").style.zIndex = "0";
+                        document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                        checkcover = 0;
+                        chec_cover_num = [];//覆蓋完牌後，退出回合;
+                        check_ended = 1;
+
+                    }
+                }
         }
 
         $(document).ready(function () {
+  
+
+            var countPlayer = 0;
             $.ajax({
                 type: "GET",
                 url:  "menber",
@@ -391,6 +486,16 @@
                         if(key == localStorage.getItem('player')){
                             console.log("測試"+value)  
                             document.getElementById("avatar").src = "static/"+value+".png";
+                        }else{
+                            countPlayer+=1;
+                            var playerArea = document.getElementsByClassName('OtherPlayer')[0].cloneNode(true);
+                            playerArea.querySelector("img").src = "static/"+value+".png";
+                            playerArea.querySelector("span").innerHTML = "&nbsp;&nbsp;Player"+countPlayer;
+                            playerArea.style.display = "block";
+                            playerArea.querySelectorAll("table")[0].className = value+"_tech";
+                            playerArea.querySelectorAll("table")[1].className = value+"_build";
+                            console.log(playerArea.querySelectorAll("table"))
+                            document.getElementsByClassName('other-player')[0].appendChild(playerArea);
                         }                          
                     }
                 }
@@ -505,6 +610,7 @@
                                                     checkcover = 0;
                                                     chec_cover_num = [];//覆蓋完牌後，退出回合;
                                                     check_init = 0;//動作完成，退出回合;
+                                                    check_ended = 1;//動作完成，退出回合，至下一round;
                                                     document.getElementById("regret").style.display = "none";
 
                                                 }
@@ -534,16 +640,23 @@
 
                                     document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
                                         if(check_init == 3){
+                                            console.log("test測試");
                                             var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
+                                            console.log("test測試"+imgtran);
+
+                                            console.log("test測試"+imgtran.style.transform);
                                             if (imgtran.style.transform == "") {
                                             
                                                 if (userHandchoice.length < 3) {
+                                                    console.log("test移動");
                                                     imgtran.style.transform = "translate(0px, -30px)";
                                                     userHandchoice.push(imgtran.id);
                                                     console.log(userHandchoice);
                                                 }
 
                                             } else {
+                                                console.log("tes失敗");
+
                                                 imgtran.style.transform = "";
                                                 userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
                                                 console.log(userHandchoice);
@@ -563,7 +676,9 @@
                                     document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
                                         document.getElementsByClassName('tooltips')[0].style.display = "none"
                                     });
-                                    check_init = 0;
+                                    check_init = 0;//動作完成，退出回合
+                                    check_ended = 1;//動作完成，退出回合，至下一round;
+
                                     document.getElementById("regret").style.display = "none";
 
                                     break;
@@ -865,7 +980,7 @@
 
                                                     var mouseX = event.clientX;
                                                     var mouseY = event.clientY;
-                                                    document.getElementsByClassName('tooltips')[0].innerHTML = "技術 : <br/>" + this.querySelector('img').id
+                                                    document.getElementsByClassName('tooltips')[0].innerHTML = "任務 : <br/>" + this.querySelector('img').id + "技術 : XXX"
                                                     document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
                                                     document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                                                     document.getElementsByClassName('tooltips')[0].style.display = "block"
@@ -904,6 +1019,7 @@
                                     }
                                     this.querySelector('img').alt = Begineer['Furl']
                                     document.getElementById("regret").style.display = "none";
+                                    check_ended = 1;//動作完成，退出回合，至下一round;
 
                                 }
                             });
@@ -1129,7 +1245,7 @@
                                                         }
                                                     }, 500);
                                                 }, 500);
-                                                document.getElementById("regret").style.display = "none";
+                                                document.getElementById("regret").style.display = "none";//移除上一步
                                                 check_init = 0;//動作完成，歸零
     
                                         return;
@@ -1216,6 +1332,7 @@
                                     this.querySelector('img').className += Medium['Body'][clsname] + " ";
                                 }
                                 document.getElementById("regret").style.display = "none";
+                                check_ended = 1;//動作完成，退出回合，至下一round;
 
                             }
 
@@ -1223,9 +1340,23 @@
                     }
                 }
             }
-                
+            document.getElementsByClassName("triangle")[0].addEventListener("click",function(){
+                if($('#ssdis').css("display") == "none"){
+                    $('#ssdis').animate({top:"-200px"},1000);
+                    $('#ssdis').show()
+                    $('.triangle').animate({top:"-200px"},1000);
+                    
+                }else{
+                    $('#ssdis').animate({top:"0px"},1000);
+                    $('.triangle').animate({top:"-30px"},1000);
+                    $('#ssdis').hide(10);
+                    console.log("123")
 
-        });
+                }
+            
+            })  
+
+        });//The End of the $(document).ready();
         function initPlay(it){
             console.log(it.id)
             if(it.id == "SelctSource"){
@@ -1277,8 +1408,15 @@
             document.getElementById("round_move_font").style.display = "block";
             document.getElementById("round_move_font").style.zIndex = 100;
             document.getElementById("regret").style.display = "none";
+            console.log(document.getElementsByClassName("hand-area")[0].querySelectorAll('img'));
+            for(var imgs = 0;imgs < document.getElementsByClassName("hand-area")[0].querySelectorAll('img').length;imgs++){
+                document.getElementsByClassName("hand-area")[0].querySelectorAll('img')[imgs].style.transform = "";
+                userHandchoice = [];
+            }
+       
         }
 
+        
 	</script>
 </head>
     
@@ -1333,42 +1471,24 @@
          <div class="container-fluid">
         <div class="row">
         
-            <div class="col-md-2">
-                <div class="card">
-                    <div class="card-body other-player" >
+            <div class="col-md-2" id="player_zone" >
+                <div class="card playerZone" style="position: relative;left: -5%;">
+                    <div class="card-body other-player" style="width: 110%;" >
                         <h5 class="card-title">其他玩家資訊</h5>
                         <!-- 其他玩家資訊內容 -->
-                        <div class="card bg-primary text-white mb-4">
-                            <div class="card-body">熊貓國</div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="#">View Details</a>
-                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                                <img src="" />
-                            </div>
-                        </div>
-                        <div class="card bg-success text-white mb-4">
-                            <div class="card-body">蘇國</div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="#">View Details</a>
-                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                            </div>
-                        </div>
-                        <div class="card bg-danger text-white mb-4">
-                            <div class="card-body">卐國</div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="#">View Details</a>
-                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    
+                
+                    </div> 
+            </div>
             </div>
             <div class="col-md-8">
-                
+
                 <div class="card" >
-                    <div class="card-body main_area" style="height:70vh">
+                    <div class="card-body main_area" style="height:85vh">
                         <div class="row">
-                            <div class="col-md-6">
+                            
+
+                            <div class="col-md-6" style="position: relative;">
                                 <table class="board_desk" >
                                     <tr>
                                         <td><img  class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="Card Image"></td>
@@ -1387,8 +1507,9 @@
                                     </tr>
                                 </table>
                             </div>
-                           
-                            <div class="col-md-6">
+
+                            <div class="col-md-6" style="position: relative;">
+                                
                                 <table class="mission">
                                 <tr>
                                     <td ></td>
@@ -1429,6 +1550,26 @@
                                     <td ></td>
                                 </tr>
                             </table>
+                            </div>
+                            <div class="triangle"></div>
+                            <div id="ssdis" style="position: relative;background-color: white;width: 100%;height: 30vh;top: 0px;display: none;border-radius: 25px;">
+                                <table id="orderSheet" style="position: relative;width: 80%;left: 10%;top:20px;">
+                                    <tr>
+                                        <td>玩家</td>
+                                        {% for i in range(Orderlen) %}
+                                        <td ><img id="OD{{i}}" style="width: 50%;" src="static/{{Order[i]}}.png"  alt="{{i}}"></td>
+                                        
+                                        {% endfor %}
+                                     
+                                    </tr>
+                                    <tr>
+                                        <td>次序</td>
+                                        {% for i in range(Orderlen)  %}
+                                        <td ><h2>{{i+1}}</h2></td>
+                                        
+                                        {% endfor %}
+                                    </tr>
+                                </table>
                             </div>
                         </div>
               
@@ -1521,7 +1662,41 @@
        
        
     </div>
-        
+    <div class="OtherPlayer card bg-primary text-white mb-4" style="display: none;">
+        <div class="card-body" style="background-image: url(https://www.technice.com.tw/wp-content/uploads/2022/12/148870586_fb-link.jpg);"><img  class="" style="height:auto;width:20%"  src="static/M2.png" alt=""><span></span></div>
+        <div class="card-footer align-items-center justify-content-between">
+            <table class="techs">
+                <tr>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                </tr>
+                <tr>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                </tr>
+                <tr>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                </tr>
+            </table>
+            <br/>
+            <table class="builds">
+                <tr>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                </tr>
+                <tr>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                    <td><img class="B1A1 B1B2 BF3 LOX4 Ti" id="B1A" src="static/mission.jpg" style="width: 50%;" alt="Card Image"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
     </form>
     
 </body>
