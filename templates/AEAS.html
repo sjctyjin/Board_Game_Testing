@@ -710,7 +710,6 @@
                                     });
                                     check_init = 0;//動作完成，退出回合
                                     check_ended = 1;//動作完成，退出回合，至下一round;
-
                                     document.getElementById("regret").style.display = "none";
 
                                     break;
@@ -954,6 +953,7 @@
                                                             document.getElementsByClassName("mission")[0].style.zIndex = "0";
                                                             checkcover = 0;
                                                             chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                            check_ended = 1;//動作完成，退出回合，至下一round;
                                                         }
                                                     }, 500);
                                                 }, 500);
@@ -1052,6 +1052,8 @@
                                     this.querySelector('img').alt = Begineer['Furl']
                                     document.getElementById("regret").style.display = "none";
                                     check_ended = 1;//動作完成，退出回合，至下一round;
+                                    check_init = 0;//動作完成，退出回合;
+
 
                                 }
                             });
@@ -1274,6 +1276,7 @@
                                                             document.getElementsByClassName("mission")[0].style.zIndex = "0";
                                                             checkcover = 0;
                                                             chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                            check_ended = 1;//動作完成，退出回合，至下一round;
                                                         }
                                                     }, 500);
                                                 }, 500);
@@ -1365,7 +1368,7 @@
                                 }
                                 document.getElementById("regret").style.display = "none";
                                 check_ended = 1;//動作完成，退出回合，至下一round;
-
+                                check_init = 0;//動作完成，退出回合;
                             }
 
                         });
