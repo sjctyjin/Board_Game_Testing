@@ -207,7 +207,7 @@ def round():
             Order_control = 0
     # print(Order_shuffled)
     # print(Order_shuffled.values())
-    return jsonify({"userorder":Order_shuffled,"order_now":Order_control})
+    return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control})
 
 
 if __name__ == "__main__":

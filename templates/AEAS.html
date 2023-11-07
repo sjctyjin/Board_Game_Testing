@@ -436,6 +436,13 @@
                 success: function (data) {
                     //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
                     console.log("使用者排序 : "+data["order_now"]);
+                    console.log("測試 : "+data["userorder"]);
+                    for(var a in data["userorder"] ){
+                        if(data["userorder"][a] == document.getElementById("avatar").src.substr(-6,2)){
+                            console.log(data["userorder"][a])
+                        }
+                        console.log(document.getElementById("avatar").src.substr(-6,2));
+                    }
                     var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
 
                     for (var key = 0;key < orderarea_img.length;key++ ) {
