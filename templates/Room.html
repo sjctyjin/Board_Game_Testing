@@ -141,7 +141,7 @@ setInterval(() => {
                     if(data.states == "1"){
                         window.location.href = "/";
                     }else if(data.states == "2"){
-                        localStorage.removeItem('player');
+                        sessionStorage.removeItem('player');
                         window.location.href = "/closestate";
                     }
                 }
@@ -157,15 +157,15 @@ function getUrlC(){
     // var newUrl = window.location.pathname + '?' + urlParams.toString();
     // window.history.pushState({}, '', newUrl);
     if (typeof(Storage) !== "undefined") {
-    // 如果 localStorage 中沒有我們設定的 session
-            if (!localStorage.getItem('player')) {
+    // 如果 sessionStorage 中沒有我們設定的 session
+            if (!sessionStorage.getItem('player')) {
                 document.getElementById("round_move_back").style.display = "block";
                 document.getElementById("round_move_font").style.display = "block";
             }
         }
 
-        if(localStorage.getItem('player')){
-            playerID = localStorage.getItem('player');
+        if(sessionStorage.getItem('player')){
+            playerID = sessionStorage.getItem('player');
 
             var imgID = document.getElementById("menber").querySelectorAll("img");
             for(var i =0;i < imgID.length;i++){
@@ -268,7 +268,7 @@ function reset_menber(){
                 dataType: "json",
                 success: function (data) {
                     console.log("成功");
-                    localStorage.removeItem('player');
+                    sessionStorage.removeItem('player');
                 },
                 error: function () {
                     // 请求失败后的处理
@@ -294,11 +294,11 @@ function runGame(){
 
 function senttoapi(playerid){
     if (typeof(Storage) !== "undefined") {
-    // 如果 localStorage 中沒有我們設定的 session
-        if (!localStorage.getItem('player')) {
+    // 如果 sessionStorage 中沒有我們設定的 session
+        if (!sessionStorage.getItem('player')) {
             // 設置一個新的 session
             playerID = document.getElementById("SelctSource").value;
-            localStorage.setItem('player', playerID);
+            sessionStorage.setItem('player', playerID);
             $.ajax({
                 type: "POST",
                 url:  "usertime",
@@ -311,7 +311,7 @@ function senttoapi(playerid){
                     console.log(data.result);    
                     if(data.result == "R"){
                         alert("ID重複，請重新建立ID");
-                        localStorage.removeItem('player');
+                        sessionStorage.removeItem('player');
                         document.getElementById("round_move_back").style.display = "block";
                         document.getElementById("round_move_font").style.display = "block";
                         return;
@@ -327,14 +327,14 @@ function senttoapi(playerid){
 
         }
         // 在控制台上印出 session 的值
-            console.log(localStorage.getItem('player'));
+            console.log(sessionStorage.getItem('player'));
     } 
     else {
         console.log("抱歉，您的瀏覽器不支持 Web Storage...");
     }
     
     console.log("玩家ID : "+playerID);
-    playerID = localStorage.getItem('player');
+    playerID = sessionStorage.getItem('player');
 
             var imgID = document.getElementById("menber").querySelectorAll("img");
             for(var i =0;i < imgID.length;i++){

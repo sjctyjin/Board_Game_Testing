@@ -520,22 +520,23 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (data) {
-                    for (var key in data["menber"]) {
-                        var value = data["menber"][key];
-                        if(key == localStorage.getItem('player')){
-                            console.log("測試"+value)  
-                            document.getElementById("avatar").src = "static/"+value+".png";
+                    for (var key in data["ordershu"]) {
+                        var value = data["ordershu"][key];
+                        console.log("初始SSS"+value);
+                        if(key == sessionStorage.getItem('player')){
+                            document.getElementById("avatar").src = "static/"+value[0]+".png";
+                            document.getElementById("avatar").alt = value[1];
                         }else{
-                            countPlayer+=1;
                             var playerArea = document.getElementsByClassName('OtherPlayer')[0].cloneNode(true);
                             playerArea.querySelector("img").src = "static/"+value+".png";
-                            playerArea.querySelector("span").innerHTML = "&nbsp;&nbsp;Player"+countPlayer;
+                            playerArea.querySelector("span").innerHTML = "&nbsp;&nbsp;"+key;
                             playerArea.style.display = "block";
                             playerArea.querySelectorAll("table")[0].className = value+"_tech";
                             playerArea.querySelectorAll("table")[1].className = value+"_build";
                             console.log(playerArea.querySelectorAll("table"))
                             document.getElementsByClassName('other-player')[0].appendChild(playerArea);
-                        }                          
+                        }      
+                                           
                     }
                 }
             });

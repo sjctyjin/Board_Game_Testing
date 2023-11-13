@@ -24,12 +24,13 @@ Session(app)
 usernum = []
 
 # usernum_list = {}#記錄使用者及其選擇星球
-usernum_list = {'WiWi': 'M6', 'Ken': 'M4', 'Omozon': 'M2', 'Edge_keven': 'M3'}
+usernum_list = {'WiWi': 'M6', 'Ken': 'M4', 'Omozon': 'M2',}
 #記錄使用者及其選擇星球
 start_game = 0 #當開始遊戲時，所有玩家一同進入大廳
 Order_shuffled = {} #玩家洗牌後存放區
 Order_control = 0#控制玩家順序
 random_change = 0 #檢查是否已經過亂數排定
+random_check = 0 #檢查是否已經給定亂數排序
 #初始任務牌-初階任務
 Preliminary = [
     {'mission': "A1A1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6},
@@ -98,7 +99,7 @@ def room():
 
 
     print(value)
-    if len(usernum_list) == 6:
+    if len(usernum_list) == 4:
         return redirect('/blcok_area')
     else:
         return render_template(f'Room.html')
@@ -136,12 +137,25 @@ def user():
 def menber():
     global usernum
     global usernum_list
-    #
+    global Order_shuffled
+    global start_game
+    global random_check
+
     print("使用者:", usernum)
     print(usernum_list)
+    print(Order_shuffled)
     print(len(usernum_list))
+    if start_game == 1:
+        if random_check == 0:
+            print("5"*1000)
+            count = 0
+            for va in Order_shuffled:
+                Order_shuffled[va] = [Order_shuffled[va],count]
+                count+=1
+                print(va)
+            random_check = 1
 
-    return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game})
+    return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game,"ordershu":Order_shuffled})
 #清空人員
 @app.route('/clear_user', methods=['POST'])
 def clear_menber():
@@ -206,7 +220,7 @@ def round():
         if Order_control >= len(list(Order_shuffled.values())):
             Order_control = 0
     # print(Order_shuffled)
-    # print(Order_shuffled.values())
+    print(list(Order_shuffled.values())[0])
     return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control})
 
 
