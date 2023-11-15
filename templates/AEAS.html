@@ -290,11 +290,15 @@
         //2023/11/01 TODO : 每一個蓋牌動作完成後，如果只選擇蓋一張，可以點及黑幕退出，黑幕退出後需要歸零動作，如: 清除check_init狀態，卡面恢復
         // 2023/11/02 TODO : 完成其他玩家動態區，完成後開始規劃玩家互動部分
         //全域變數
+        // 2023/11/14 TODO : 將資源都建立到後端去，並將所有動作(拿資源、蓋資源、出任務、蓋任務)都變為POST到後端對資源json格式做新增與刪除，同時須記錄下使用者的手牌及技術資訊
+        
         var userHandchoice = [];
         var checkcover = 0;//當使用者點擊覆蓋資源時為1
         var chec_cover_num = [];//計算使用者點擊覆蓋資源牌數
         var check_init = 0;//判斷使用者選擇動作，若未選擇則為0;
         var check_ended = 0;//判斷使用者是否完成動作;0代表已完成
+        var check_rounds = 0;//判斷使用者回合是否開始，若開始則為一，結束則設為0
+
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -435,24 +439,38 @@
                 dataType: "json",
                 success: function (data) {
                     //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
-                    console.log("使用者排序 : "+data["order_now"]);
-                    console.log("測試 : "+data["userorder"]);
-                    for(var a in data["userorder"] ){
-                        if(data["userorder"][a] == document.getElementById("avatar").src.substr(-6,2)){
-                            console.log(data["userorder"][a])
-                        }
-                        console.log(document.getElementById("avatar").src.substr(-6,2));
-                    }
+                    // console.log("使用者排序 : "+data["order_now"]);
+                    // console.log("測試 : "+data["userorder"]);
+                    // for(var a in data["userorder"] ){
+                    //     if(data["userorder"][a] == document.getElementById("avatar").src.substr(-6,2)){
+                    //         console.log(data["userorder"][a])
+                    //     }
+                    //     console.log(document.getElementById("avatar").src.substr(-6,2));
+                    // }
                     var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
 
                     for (var key = 0;key < orderarea_img.length;key++ ) {
+                        if(document.getElementById("avatar").alt != data["order_now"]){
+                            check_init = 99;
+                        }else{
+                            if(check_rounds == 0){
+                                check_init = 0;
+                                check_rounds = 1;//歸零回合開始-僅執行一次
+                                document.getElementById("round_move_back").style.display = "block";
+                                document.getElementById("round_move_back").style.zIndex = 99;
+                                document.getElementById("round_move_font").style.display = "block";
+                                document.getElementById("round_move_font").style.zIndex = 100;
+                            }
+                            
+                        }
                         if(orderarea_img[key].alt == data["order_now"]){
                             // $("#" + orderarea_img[key].id).animate({ top: "-10px" });
                             // $("#" + orderarea_img[key].id).animate({ top: "0px" });
                             document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "red"
 
-                            if(check_ended == 1){
+                            if(check_ended == 1){//檢查玩家是否已結束此回合
                                 check_ended = 0;
+                                check_rounds = 0;//回合結束
                             }
                             //break;
                         }else{
@@ -528,17 +546,30 @@
                             document.getElementById("avatar").alt = value[1];
                         }else{
                             var playerArea = document.getElementsByClassName('OtherPlayer')[0].cloneNode(true);
-                            playerArea.querySelector("img").src = "static/"+value+".png";
+                            playerArea.querySelector("img").src = "static/"+value[0]+".png";
+                            playerArea.querySelector("img").alt = value[1];
+                            playerArea.querySelector("img").id="PlayerA"+value[1];
                             playerArea.querySelector("span").innerHTML = "&nbsp;&nbsp;"+key;
                             playerArea.style.display = "block";
-                            playerArea.querySelectorAll("table")[0].className = value+"_tech";
-                            playerArea.querySelectorAll("table")[1].className = value+"_build";
+                            playerArea.querySelectorAll("table")[0].className = value[0]+"_tech";
+                            playerArea.querySelectorAll("table")[1].className = value[0]+"_build";
                             console.log(playerArea.querySelectorAll("table"))
                             document.getElementsByClassName('other-player')[0].appendChild(playerArea);
                         }      
                                            
                     }
                 }
+            });
+            document.getElementsByClassName("col-md-8")[0].querySelectorAll("table")[0].addEventListener("click",function(){
+                if(check_init == 99){
+                    $("#block-round").fadeIn(100);
+                    $("#block-round").animate({display:'block',top:'10vh'},300);
+                    
+                    $("#block-round").fadeOut(500);
+                    $("#block-round").css("top",'0vh');
+                    return;
+                }
+           
             });
             var resource = document.getElementsByClassName('board_desk')[0];//.querySelectorAll('td')
             var missions = document.getElementsByClassName('mission')[0];//.querySelectorAll('td')
@@ -559,6 +590,7 @@
                             document.getElementById("round_move_font").style.zIndex = 100;
                             return;
                         }
+                    
                         if(check_init != 1 & check_init != 2){
                             return;
                         }
@@ -1464,6 +1496,10 @@
 </head>
     
 <body>
+    <div id="block-round" style="display:none;position: fixed;width: 30%;left: 35%;border: 3px solid;background-color: lightcoral;border-radius: 25px;padding: 30px;z-index: 99;">
+        <h1 style="text-align: center;">還沒輪到你</h1>
+          
+      </div>
          <div class="tooltips" style="display:none">
           <span class="tooltiptext">Tooltip text</span>
             
@@ -1600,7 +1636,7 @@
                                     <tr>
                                         <td>玩家</td>
                                         {% for i in range(Orderlen) %}
-                                        <td ><img id="OD{{i}}" style="width: 50%;" src="static/{{Order[i]}}.png"  alt="{{i}}"></td>
+                                        <td ><img id="OD{{i}}" style="width: 50%;" src="static/{{Order[i][0]}}.png"  alt="{{i}}"></td>
                                         
                                         {% endfor %}
                                      
