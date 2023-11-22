@@ -21,16 +21,42 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config["DEBUG"] = True
 app.config["JSON_AS_ASCII"] = False
 Session(app)
-usernum = []
 
-# usernum_list = {}#記錄使用者及其選擇星球
-usernum_list = {'WiWi': 'M6', 'Ken': 'M4', 'Omozon': 'M2',}
+usernum = {} #記錄使用者的手牌
+
+usernum_list = {}#記錄使用者及其選擇星球
+# usernum_list = {'WiWi': 'M6', 'Ken': 'M4', 'Omozon': 'M2',}
 #記錄使用者及其選擇星球
 start_game = 0 #當開始遊戲時，所有玩家一同進入大廳
 Order_shuffled = {} #玩家洗牌後存放區
 Order_control = 0#控制玩家順序
-random_change = 0 #檢查是否已經過亂數排定
-random_check = 0 #檢查是否已經給定亂數排序
+random_change = 0 #檢查玩家是否已經過亂數排定(玩家順序)
+random_check = 0 #檢查玩家是否已經給定排序編號(給定順序編號)
+Source_random_check = 0 #檢查是否已經給定資源及任務亂數排序
+#資源牌
+SourceAray = [
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
+            'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
+			'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11', 'Delta11',
+            'Delta12', 'Delta12', 'Delta12', 'Delta12', 'Delta12', 'Delta11', 'Delta12',
+            'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13', 'Delta13',
+            'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14', 'Delta14',
+            'Delta15', 'Delta15', 'Delta15', 'Delta15', 'Delta15',
+            'Delta16', 'Delta16', 'Delta16', 'Delta16', 'Delta16',
+            'Delta17', 'Delta17', 'Delta17',
+            'Delta18', 'Delta18', 'Delta18',
+            'Delta19', 'Delta19',
+            'Delta20', 'Delta20',
+			'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5', 'SUS_5',
+			'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4', 'AL_4',
+			'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3', 'ACM_3',
+			'CMC_2', 'CMC_2', 'CMC_2', 'CMC_2', 'CMC_2',
+			'Ti_1', 'Ti_1', 'Ti_1',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+            'AF1', 'AF2', 'AF3', 'AF4', 'AF5', 'AF6',
+        ];
 #初始任務牌-初階任務
 Preliminary = [
     {'mission': "A1A1", "Payload": "BF1", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 6},
@@ -71,6 +97,28 @@ Preliminary = [
     {'mission': "A1F2", "Payload": "BF6", "Body": ["SUS_5", "AL_4", "ACM_3"], "Furl": 12},
 
 ]
+
+Intermed = [
+			{ 'tech': ["A1A1", "A1A2"], 'mission': "A1A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+			{ 'tech': ["A1B1", "A1B2"], 'mission': "A1B", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["B1A1", "B1A2"], 'mission': "B1A", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["B1B1", "B1B2"], 'mission': "B1B", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["B1C1", "B1C2"], 'mission': "B1C", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+			{ 'tech': ["C1B1", "C1B2"], 'mission': "C1B", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["C1C1", "C1C2"], 'mission': "C1C", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["C1D1", "C1D2"], 'mission': "C1D", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["D1C1", "D1C2"], 'mission': "D1C", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 9 },
+			{ 'tech': ["D1D1", "D1D2"], 'mission': "D1D", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+			{ 'tech': ["D1E1", "D1E2"], 'mission': "D1E", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+			{ 'tech': ["E1D1", "E1D2"], 'mission': "E1D", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+			{ 'tech': ["E1E1", "E1E2"], 'mission': "E1E", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+			{ 'tech': ["E1F1", "E1F2"], 'mission': "E1F", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["F1E1", "F1E2"], 'mission': "F1E", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+			{ 'tech': ["F1F1", "F1F2"], 'mission': "F1F", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["F1A1", "F1A2"], 'mission': "F1A", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+			{ 'tech': ["A1F1", "A1F2"], 'mission': "A1F", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+
+        ]
 @app.route('/', methods=['GET'])
 def home():
     global start_game
@@ -119,14 +167,15 @@ def user():
     data_res = request.get_json()
     # print(data_res)
     # if len(usernum_list) != 0:
-    value = session.get('jim')
-    print(value)
+    print("User選角")
     print(data_res['user'])
+
     if len(usernum_list) == 0:
         usernum_list[data_res['user']] = ""
+        return jsonify({'result':'done'})
     if usernum_list[data_res['user']] == "":
         usernum_list[data_res['user']] = data_res['selected']
-        return Response('done')
+        return jsonify({'result':'done'})
     else:
         usernum_list[data_res['user']] = ""
         return jsonify({'result':'done'})
@@ -154,6 +203,9 @@ def menber():
                 count+=1
                 print(va)
             random_check = 1
+            print("亂數完成 : ",Order_shuffled)
+            return jsonify(
+                {f"menber": usernum_list, "userlog": usernum, "states": start_game, "ordershu": Order_shuffled})
 
     return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game,"ordershu":Order_shuffled})
 #清空人員
@@ -163,7 +215,7 @@ def clear_menber():
     global usernum_list
     global start_game
 
-    usernum = []
+    usernum = {}
     usernum_list = {}
     start_game = 2 #重置遊戲人數，所有人重新載入
     return jsonify({f"menber":usernum})
@@ -186,7 +238,7 @@ def usertime():
         if i == data_res['set_time']:
             return jsonify({'result': 'R'})
     usernum_list[data_res['set_time']] = ""
-    usernum.append(data_res['set_time'])
+    usernum[data_res['set_time']] = {'Hand':'','Tech':'','Build':''}
     print("使用者:",usernum)
 
     return render_template(f'Room.html')
@@ -223,7 +275,60 @@ def round():
     print(list(Order_shuffled.values())[0])
     return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control})
 
+#資源牌庫
+@app.route('/resource', methods=['POST','GET'])
+def resource():
+    global SourceAray   #資源牌
+    global Preliminary  #初階任務
+    global Intermed     #中階任務
+    global Source_random_check     #確認
+    if request.method == 'GET':
+        if Source_random_check == 0:#若牌堆還未洗牌
+            print(SourceAray)
+            random.shuffle(SourceAray)
+            random.shuffle(Preliminary)
+            random.shuffle(Intermed)
+            Source_random_check = 1
+        return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+    else:
+        data_res = request.get_json()
+        print("資源牌 : ",data_res["SourceAray"])
+        print("初階任務 : ",data_res["Preliminary"])
+        print("中階任務 : ",data_res["Intermed"])
+        print("使用者 : ",data_res["user"])
+        print("手牌 : ",data_res["userHands"])
+        print("技術 : ",data_res["userTech"])
+        print("建設 : ",data_res["userBuild"])
+        usernum[data_res['set_time']] = {'Hand': '', 'Tech': '', 'Build': ''}
 
+        return jsonify({'result':"pass"})
+#所有資訊
+@app.route('/all_info', methods=['GET'])
+def info_ALL():
+    global usernum #記錄使用者的手牌
+    global usernum_list#記錄使用者及其選擇星球
+    global start_game #當開始遊戲時，所有玩家一同進入大廳
+    global Order_shuffled #玩家洗牌後存放區
+    global Order_control #控制玩家順序
+    global random_change #檢查是否已經過亂數排定
+    global random_check  #檢查玩家是否已經給定排序編號
+    global Source_random_check #檢查是否已經給定資源及任務亂數排序
+    global SourceAray  # 資源牌
+    global Preliminary  # 初階任務
+    global Intermed  # 中階任務
+
+    return jsonify({'usernum(使用者的手牌)': usernum,
+                    'usernum_list(用者及其選擇星球)':usernum_list,
+                    'start_game':start_game,
+                    'Order_shuffled(玩家洗牌後存放區)':Order_shuffled,
+                    'Order_control(控制玩家順序)':Order_control,
+                    'random_change(檢查玩家是否已經過亂數排定)':random_change,
+                    'random_check(檢查玩家是否已經給定排序編號)':random_check,
+                    'Source_random_check(檢查是否已經給定資源及任務亂數排序)':Source_random_check,
+                    'SourceAray_資源牌':SourceAray,
+                    'Preliminary_初階任務':Preliminary,
+                    'Intermed_初階任務':Intermed,
+                    })
 if __name__ == "__main__":
 
     app.run(host='0.0.0.0',port=5000,debug=True)

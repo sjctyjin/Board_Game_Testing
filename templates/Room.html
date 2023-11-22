@@ -17,6 +17,7 @@
      img{
         width: 100%;
         height: auto;
+        transition: transform 0.8s;
      }
  
 	 #menber{
@@ -58,6 +59,7 @@
     var self_select = "";
     var playerID = "";
     var alls = "";
+    var check_role = 0;
 setInterval(() => {
     console.log("test");
     
@@ -69,10 +71,9 @@ setInterval(() => {
                 dataType: "json",
                 success: function (data) {
                     //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
-                    console.log(data);
                     alls = data;
-                    console.log(data.menber.length);
-                    console.log(data.menber.playerID);
+                    // console.log(data.menber.length);
+                    // console.log(data.menber.playerID);
                     var user_log = data.userlog;
                     var imgID = document.getElementById("menber").querySelectorAll("img");
                     var checkM1 = 0;
@@ -84,11 +85,11 @@ setInterval(() => {
                     for(var i = 0;i < imgID.length;i++){
                         for (var key in data["menber"]) {
                             var value = data["menber"][key];
-                            console.log("Key: " + key + ", Value: " + value);
+                            // console.log("Key: " + key + ", Value: " + value);
                             
                             if(value == imgID[i].id){
-                                console.log("比對成功 ");
-                                console.log("比對成功 :"+value);
+                                // console.log("比對成功 ");
+                                // console.log("比對成功 :"+value);
 
                                 if(value == "M1") checkM1 = 1;
                                 if(value == "M2") checkM2 = 1;
@@ -109,32 +110,32 @@ setInterval(() => {
                     }
                     
                     if(checkM1 == 0){
-                        console.log("M1未選取")
+                        // console.log("M1未選取")
                         document.getElementById("M1").style.opacity = 1;
                         document.getElementById("M1").parentElement.style.backgroundColor = "";
                     }
                     if(checkM2 == 0){
-                        console.log("M2未選取")
+                        // console.log("M2未選取")
                         document.getElementById("M2").style.opacity = 1;
                         document.getElementById("M2").parentElement.style.backgroundColor = "";
                     }
                     if(checkM3 == 0){
-                        console.log("M3未選取")
+                        // console.log("M3未選取")
                         document.getElementById("M3").style.opacity = 1;
                         document.getElementById("M3").parentElement.style.backgroundColor = "";
                     }
                     if(checkM4 == 0){
-                        console.log("M4未選取")
+                        // console.log("M4未選取")
                         document.getElementById("M4").style.opacity = 1;
                         document.getElementById("M4").parentElement.style.backgroundColor = "";
                     }
                     if(checkM5 == 0){
-                        console.log("M5未選取")
+                        // console.log("M5未選取")
                         document.getElementById("M5").style.opacity = 1;
                         document.getElementById("M5").parentElement.style.backgroundColor = "";
                     }
                     if(checkM6 == 0){
-                        console.log("M6未選取")
+                        // console.log("M6未選取")
                         document.getElementById("M6").style.opacity = 1;
                         document.getElementById("M6").parentElement.style.backgroundColor = "";
                     }
@@ -171,7 +172,7 @@ function getUrlC(){
             for(var i =0;i < imgID.length;i++){
                 imgID[i].addEventListener('click',function(e){
                     if(this.parentElement.style.backgroundColor != "red"){
-                        if(self_select == ""){
+                        // if(self_select == ""){
                         
                             console.log(this.id);
                             console.log("測試"+self_select)
@@ -180,13 +181,16 @@ function getUrlC(){
                                 url:  "user",
                                 data: JSON.stringify({
                                     "user": playerID,
-                                    "selected": this.id,
+                                    "selected": this.id,//所選角色
                                 
                                 }),
                                 contentType: "application/json; charset=utf-8",
                                 dataType: "json",
                                 success: function (data) {
                                     console.log("成功");
+                                    check_role = 1;
+                                    console.log("腳色狀態" +check_role);
+                                    
                                 },
                                 error: function () {
                                     // 请求失败后的处理
@@ -194,7 +198,7 @@ function getUrlC(){
                                 }
                             });
                             
-                        }     
+                        // }     
                     }
                     else{
                             if(this.id == self_select){
@@ -213,6 +217,7 @@ function getUrlC(){
                                 success: function (data) {
                                     console.log("成功");
                                     console.log("解除");
+                                    check_role = 0;
                                 },
                                 error: function () {
                                     // 请求失败后的处理
@@ -241,7 +246,7 @@ function getUrlC(){
                         document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                         document.getElementsByClassName('tooltips')[0].style.display = "block"
                     }else{
-                        this.style.opacity = 0.5;
+                        this.style.transform = "rotateY(180deg)";
                     }              
                 });
                 document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
@@ -249,7 +254,7 @@ function getUrlC(){
                     
                         document.getElementsByClassName('tooltips')[0].style.display = "none"
                     }else{
-                        this.style.opacity = 1;
+                        this.style.transform = "rotateY(0deg)";
                     }              
                 });
             }
@@ -280,7 +285,8 @@ function reset_menber(){
         
 }
 function runGame(){
-    $.ajax({
+    if(check_role == 1){
+        $.ajax({
             type: "POST",
             url:  "start",
             contentType: "application/json; charset=utf-8",
@@ -289,7 +295,12 @@ function runGame(){
                 console.log("成功");
             }
         });
-    window.location.href = "/";
+        window.location.href = "/";
+    }
+    else{
+        alert('尚未選角');
+    }
+   
 }
 
 function senttoapi(playerid){
@@ -334,13 +345,14 @@ function senttoapi(playerid){
     }
     
     console.log("玩家ID : "+playerID);
-    playerID = sessionStorage.getItem('player');
+    if(sessionStorage.getItem('player')){
+            playerID = sessionStorage.getItem('player');
 
             var imgID = document.getElementById("menber").querySelectorAll("img");
             for(var i =0;i < imgID.length;i++){
                 imgID[i].addEventListener('click',function(e){
                     if(this.parentElement.style.backgroundColor != "red"){
-                        if(self_select == ""){
+                        // if(self_select == ""){
                         
                             console.log(this.id);
                             console.log("測試"+self_select)
@@ -349,13 +361,16 @@ function senttoapi(playerid){
                                 url:  "user",
                                 data: JSON.stringify({
                                     "user": playerID,
-                                    "selected": this.id,
+                                    "selected": this.id,//所選角色
                                 
                                 }),
                                 contentType: "application/json; charset=utf-8",
                                 dataType: "json",
                                 success: function (data) {
                                     console.log("成功");
+                                    check_role = 1;
+                                    console.log("腳色狀態" +check_role);
+                                    
                                 },
                                 error: function () {
                                     // 请求失败后的处理
@@ -363,7 +378,7 @@ function senttoapi(playerid){
                                 }
                             });
                             
-                        }     
+                        // }     
                     }
                     else{
                             if(this.id == self_select){
@@ -382,6 +397,7 @@ function senttoapi(playerid){
                                 success: function (data) {
                                     console.log("成功");
                                     console.log("解除");
+                                    check_role = 0;
                                 },
                                 error: function () {
                                     // 请求失败后的处理
@@ -410,7 +426,7 @@ function senttoapi(playerid){
                         document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                         document.getElementsByClassName('tooltips')[0].style.display = "block"
                     }else{
-                        this.style.opacity = 0.5;
+                        this.style.transform = "rotateY(180deg)";
                     }              
                 });
                 document.getElementById(imgID[i].id).addEventListener('mouseleave',function(event){
@@ -418,11 +434,12 @@ function senttoapi(playerid){
                     
                         document.getElementsByClassName('tooltips')[0].style.display = "none"
                     }else{
-                        this.style.opacity = 1;
+                        this.style.transform = "rotateY(0deg)";
                     }              
                 });
             }
-    
+        }
+
 }
 </script>
 </head>
