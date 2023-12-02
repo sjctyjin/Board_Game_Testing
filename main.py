@@ -33,6 +33,10 @@ Order_control = 0#控制玩家順序
 random_change = 0 #檢查玩家是否已經過亂數排定(玩家順序)
 random_check = 0 #檢查玩家是否已經給定排序編號(給定順序編號)
 Source_random_check = 0 #檢查是否已經給定資源及任務亂數排序
+Table_Source = {} #當前牌面(資源牌)
+Table_Pre = {} #當前牌面(初階任務)
+Table_Inter = {} #當前牌面(中階任務)
+
 #資源牌
 SourceAray = [
             'BF1', 'BF2', 'BF3', 'BF4', 'BF5', 'BF6',
@@ -125,28 +129,34 @@ def home():
     global usernum_list
     global Order_shuffled
     global random_change
+    global usernum
+
     if start_game == 1:
-        if random_change == 0:
-            print(usernum_list)
-            buffer_user = list(usernum_list.items())
-            random.shuffle(buffer_user)
-            # 將洗牌後的列表轉換回字典
-            Order_shuffled = dict(buffer_user)
-            random_change = 1
+        # if random_change == 0:
+        #     print(usernum_list)
+        #     buffer_user = list(usernum_list.items())
+        #     random.shuffle(buffer_user)
+        #     # 將洗牌後的列表轉換回字典
+        #     Order_shuffled = dict(buffer_user)
+        #     random_change = 1#將此段移至start處
 
 
         return render_template(f'AEAS.html',Orderlen=len(list(Order_shuffled.values())),Order=list(Order_shuffled.values()))
     else:
-        return redirect('/Join')
+        shuff = 0
+        if usernum == {}:#若為空 代表無玩家登入
+            shuff = 1 #檢查是否有玩家，若無玩家則前端直接刷新session
+        return render_template(f'Room.html',shuff=shuff)
+
 
 #當人數超過限制則阻止進入
 @app.route('/Join', methods=['GET'])
 def room():
     global usernum_list
-    value = session.get('jim')
-
-
-    print(value)
+    # value = session.get('jim')
+    #
+    #
+    # print(value)
     if len(usernum_list) == 4:
         return redirect('/blcok_area')
     else:
@@ -194,18 +204,18 @@ def menber():
     print(usernum_list)
     print(Order_shuffled)
     print(len(usernum_list))
-    if start_game == 1:
-        if random_check == 0:
-            print("5"*1000)
-            count = 0
-            for va in Order_shuffled:
-                Order_shuffled[va] = [Order_shuffled[va],count]
-                count+=1
-                print(va)
-            random_check = 1
-            print("亂數完成 : ",Order_shuffled)
-            return jsonify(
-                {f"menber": usernum_list, "userlog": usernum, "states": start_game, "ordershu": Order_shuffled})
+    # if start_game == 1:
+    #     if random_check == 0:
+    #         print("5"*1000)
+    #         count = 0
+    #         for va in Order_shuffled:
+    #             Order_shuffled[va] = [Order_shuffled[va],count]
+    #             count+=1
+    #             print(va)
+    #         random_check = 1
+    #         print("亂數完成 : ",Order_shuffled)
+    #         return jsonify(
+    #             {f"menber": usernum_list, "userlog": usernum, "states": start_game, "ordershu": Order_shuffled})
 
     return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game,"ordershu":Order_shuffled})
 #清空人員
@@ -247,6 +257,9 @@ def usertime():
 def start():
     global start_game
     global usernum_list
+    global random_check
+    global Order_shuffled
+    global random_change
 
     start_game = 1
     items = list(usernum_list.items())
@@ -255,6 +268,25 @@ def start():
     # 將洗牌後的列表轉換回字典
     shuffled_dict = dict(items)
     print(shuffled_dict)
+    if random_change == 0:
+        buffer_user = list(usernum_list.items())
+        random.shuffle(buffer_user)
+        # 將洗牌後的列表轉換回字典
+        Order_shuffled = dict(buffer_user)
+        random_change = 1
+    if random_check == 0:
+        print("5" * 1000)
+        count = 0
+        print(Order_shuffled)
+        for va in Order_shuffled:
+            Order_shuffled[va] = [Order_shuffled[va], count]
+            count += 1
+            print(va)
+        random_check = 1
+        print("亂數完成 : ", Order_shuffled)
+
+        # return jsonify(
+        #     {f"menber": usernum_list, "userlog": usernum, "states": start_game, "ordershu": Order_shuffled})
     return Response('done')
 
 #玩家回合訊號
@@ -262,18 +294,21 @@ def start():
 def round():
     global start_game
     global Order_shuffled
-    global Order_control
+    global Order_control#當前玩家順序
+    global SourceAray   #資源牌
+    global Preliminary  #初階任務
+    global Intermed     #中階任務
 
     data_res = request.get_json()
-    print(data_res["user_state"])
+    # print(data_res["user_state"])#確認玩家是否已完成該回合動作
     if data_res["user_state"] == 1:
         Order_control += 1
-        print(Order_control)
+        print("當前順序",Order_control)
         if Order_control >= len(list(Order_shuffled.values())):
             Order_control = 0
     # print(Order_shuffled)
-    print(list(Order_shuffled.values())[0])
-    return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control})
+    # print(list(Order_shuffled.values())[0])
+    return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control,'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
 
 #資源牌庫
 @app.route('/resource', methods=['POST','GET'])
@@ -282,6 +317,10 @@ def resource():
     global Preliminary  #初階任務
     global Intermed     #中階任務
     global Source_random_check     #確認
+    global Table_Source  # 桌面資源牌
+    global Table_Pre     # 桌面初階任務
+    global Table_Inter   # 桌面中階任務
+    global usernum   # 玩家手牌
     if request.method == 'GET':
         if Source_random_check == 0:#若牌堆還未洗牌
             print(SourceAray)
@@ -289,7 +328,9 @@ def resource():
             random.shuffle(Preliminary)
             random.shuffle(Intermed)
             Source_random_check = 1
-        return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+            return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+        return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed,'Table_Source': Table_Source, 'Table_Pre': Table_Pre, 'Table_Inter': Table_Inter,'User_Hand':usernum})
+
     else:
         data_res = request.get_json()
         print("資源牌 : ",data_res["SourceAray"])
@@ -299,9 +340,29 @@ def resource():
         print("手牌 : ",data_res["userHands"])
         print("技術 : ",data_res["userTech"])
         print("建設 : ",data_res["userBuild"])
-        usernum[data_res['set_time']] = {'Hand': '', 'Tech': '', 'Build': ''}
+        print("資源牌(桌面) : ", data_res["SourceAray"])
+        print("初階任務(桌面)  : ", data_res["Preliminary"])
+        print("中階任務(桌面)  : ", data_res["Intermed"])
+        print(usernum[data_res["user"]])
+        #玩家手牌更新
+        usernum[data_res["user"]]['Hand'] = data_res["userHands"]
+        usernum[data_res["user"]]['Tech'] = data_res["userTech"]
+        usernum[data_res["user"]]['Build'] = data_res["userBuild"]
+        #資源、任務牌更新
+        SourceAray = data_res["SourceAray"]
+        Preliminary = data_res["Preliminary"]
+        Intermed = data_res["Intermed"]
+        #桌面牌更新
+        Table_Source = data_res["Table_Source"]
+        Table_Pre = data_res["Table_Pre"]
+        Table_Inter = data_res["Table_Inter"]
 
-        return jsonify({'result':"pass"})
+        print(usernum[data_res["user"]]['Hand'])
+        print(usernum[data_res["user"]]['Tech'])
+        print(usernum[data_res["user"]]['Build'])
+        # usernum[data_res['set_time']] = {'Hand': '', 'Tech': '', 'Build': ''}
+
+        return jsonify({'result':"pass",'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
 #所有資訊
 @app.route('/all_info', methods=['GET'])
 def info_ALL():
@@ -316,6 +377,9 @@ def info_ALL():
     global SourceAray  # 資源牌
     global Preliminary  # 初階任務
     global Intermed  # 中階任務
+    global Table_Source  # 桌面資源牌
+    global Table_Pre     # 桌面初階任務
+    global Table_Inter   # 桌面中階任務
 
     return jsonify({'usernum(使用者的手牌)': usernum,
                     'usernum_list(用者及其選擇星球)':usernum_list,
@@ -327,7 +391,10 @@ def info_ALL():
                     'Source_random_check(檢查是否已經給定資源及任務亂數排序)':Source_random_check,
                     'SourceAray_資源牌':SourceAray,
                     'Preliminary_初階任務':Preliminary,
-                    'Intermed_初階任務':Intermed,
+                    'Intermed_中階任務':Intermed,
+                    'Table_Source_資源牌(桌面)': Table_Source,
+                    'Table_Pre_初階任務(桌面)': Table_Pre,
+                    'Table_Inter_中階任務(桌面)': Table_Inter,
                     })
 if __name__ == "__main__":
 

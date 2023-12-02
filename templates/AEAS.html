@@ -294,6 +294,9 @@
         // 2023/11/17 TODO : 已完成資源、任務牌在初始化後從後端洗牌後送往前端， 剩餘需處理 1.儲存玩家狀態(手牌、技術、建設) 2.牌拿取後除了pop調之外，也要同步更新後端
         // 2023/11/20 TODO : 已將玩家狀態(僅手牌、無技術與建設)；資源任務牌都POST到後端，剩餘需讓後端回送回資源值 以更新全局
         // 2023/11/22 TODO : 處理重新載入的bug，新增了所有變數的可觀頁面，確認當前卡牌狀況，剩餘須完成部分，從python後端行:302開始 將手牌、技術與建設加入到個人的內容中。
+        // 2023/11/27 TODO : 已處理網頁reload後，牌面刷新問題，尚未解決 1.玩家手牌reload後刷新歸零(11/28以處理) 2. 後端的資源及任務牌在玩家結束回合後不會更新
+        // 2023/12/01 TODO : 發現BUG : 1.玩家回合時，刷新頁面會導致pass掉回合2.玩家選擇資源後，其他玩家牌面沒有同步更新
+
         var userHandchoice = [];
         var checkcover = 0;//當使用者點擊覆蓋資源時為1
         var chec_cover_num = [];//計算使用者點擊覆蓋資源牌數
@@ -306,6 +309,9 @@
         var userHands = [];//玩家當前手牌，狀態處理用
         var userTech = [];//玩家當前技術，狀態處理用
         var userBuild = [];//玩家當前建設，狀態處理用
+        var Table_Source = {};//當前桌面資源
+        var Table_Pre = {};//當前桌面初階任務
+        var Table_Inter = {};//當前桌面中階任務
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -426,20 +432,20 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (data) {
-                    //TODO : 要透過data.userlog紀錄的每位玩家的ID值來撈取data.menber.玩家ID
-                    // console.log("使用者排序 : "+data["order_now"]);
-                    // console.log("測試 : "+data["userorder"]);
-                    // for(var a in data["userorder"] ){
-                    //     if(data["userorder"][a] == document.getElementById("avatar").src.substr(-6,2)){
-                    //         console.log(data["userorder"][a])
+                    // SourceAray = data["resource"];
+                    // Preliminary = data["Pre"];
+                    // Intermed = data["Inter"];
+                    // if(Table_Source != {}){
+                    //     for(var TS = 0;TS<Table_Inter.length;TS++){
+                    //         Table_Inter[TS]
                     //     }
-                    //     console.log(document.getElementById("avatar").src.substr(-6,2));
                     // }
+
                     var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
 
                     for (var key = 0;key < orderarea_img.length;key++ ) {
                         if(document.getElementById("avatar").alt != data["order_now"]){
-                            check_init = 99;
+                            check_init = 99;//確認是否為玩家回合，若否則無法執行動作。
                         }else{
                             if(check_rounds == 0){
                                 check_init = 0;
@@ -470,6 +476,7 @@
                                 for (var c = 0; c < document.getElementsByClassName('build')[0].querySelectorAll('img').length; c++) {
                                     userBuild.push(document.getElementsByClassName('build')[0].querySelectorAll('img')[c].id);
                                 }
+                                console.log("資源牌 : 刷新"+SourceAray);
                                 $.ajax({
                                     type: "POST",
                                     url:  "resource",
@@ -477,10 +484,13 @@
                                         "SourceAray":SourceAray,//loading 資源牌
                                         "Preliminary":Preliminary,    //loading 初階任務
                                         "Intermed":Intermed,     //loading 中階任務
-                                        "user":data["order_now"],
+                                        "user":sessionStorage.getItem('player'),
                                         "userHands":userHands,
                                         "userTech":userTech,
                                         "userBuild":userBuild,
+                                        "Table_Source":Table_Source,//即時更新桌面
+                                        "Table_Pre":Table_Pre,      //即時更新桌面
+                                        "Table_Inter":Table_Inter,  //即時更新桌面
                                     }),
                                     contentType: "application/json; charset=utf-8",
                                     dataType: "json",
@@ -494,12 +504,14 @@
                         }else{
                             // $("#" + orderarea_img[key].id).css("top","0px" );
                             // $("#" + orderarea_img[key].id).stop();
-                            document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "black"
+                            document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "black";//非該回合玩家，字體顯示黑色
 
                         }
-                    }
-                       
+                    }      
                     
+                },error: function () {
+                    // 请求失败后的处理
+                    console.log("請求失敗");
                 }
             });
     }, 500);
@@ -541,7 +553,6 @@
                         checkcover = 0;
                         chec_cover_num = [];//覆蓋完牌後，退出回合;
                         check_ended = 1;
-
                     }
                 }
         }
@@ -582,263 +593,150 @@
                     }
                 }
             });
+            //初始化資源卡牌-僅初次載入時執行一次
 
-            //初始化資源卡牌
-            $.ajax({
-                type: "GET",
-                url:  "resource",
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    console.log( data.resource)
-                   SourceAray = data.resource;//loading 資源牌
-                   Preliminary = data.Pre;    //loading 初階任務
-                   Intermed = data.Inter;     //loading 中階任務
-                   //給定資源及綁定功能
-                   for (var a = 0; a < resource.querySelectorAll('td').length; a++) {
-                        if (a != 4) {
+            
+                $.ajax({
+                    type: "GET",
+                    url:  "resource",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        if(!sessionStorage.getItem('Initshuffle')){
+                            SourceAray = data.resource;//loading 資源牌
+                            Preliminary = data.Pre;    //loading 初階任務
+                            Intermed = data.Inter;     //loading 中階任務
+                        }else{
+                            SourceAray = data["resource"];//loading 資源牌
+                            Preliminary = data["Pre"];    //loading 初階任務
+                            Intermed = data["Inter"];     //loading 中階任務
+                            Table_Source = data["Table_Source"];//loading 資源牌
+                            Table_Pre = data["Table_Pre"];    //loading 初階任務
+                            Table_Inter = data["Table_Inter"];     //loading 中階任務
+                            var userHand = data["User_Hand"];   //玩家手牌
+                            console.log(userHand);
+                            console.log(userHand[sessionStorage.getItem('player')])
+                            for(var hands = 0;hands < userHand[sessionStorage.getItem('player')]["Hand"].length;hands ++){
+                                for (var i = 0; i < $(".hand-area td").length; i++) {
+                                            if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
+                                                var d = document.createElement("img");
+                                                d.id =  userHand[sessionStorage.getItem('player')]["Hand"][hands];
+                                                d.style.height = "18vh";
+                                                d.src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);//將卡牌從牌堆中轉至手牌區
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
+                                                    event = event || window.event; // 兼容性處理
 
+                                                    var mouseX = event.clientX;
+                                                    var mouseY = event.clientY;
+                                                    document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:Delta、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
+                                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                                });
 
-                            resource.querySelectorAll('td')[a].querySelector('img').id = SourceAray.pop();
-                            resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
+                                                    if(check_init == 3){
+                                                        console.log("test測試");
+                                                        var imgtran = this;
+                                                        console.log("test測試"+imgtran);
 
-                            resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
-                                console.log("狀態"+check_init)
-                                if(check_init == 0){
-
-                                    document.getElementById("round_move_back").style.display = "block";
-                                    document.getElementById("round_move_back").style.zIndex = 99;
-                                    document.getElementById("round_move_font").style.display = "block";
-                                    document.getElementById("round_move_font").style.zIndex = 100;
-                                    return;
-                                }
-                            
-                                if(check_init != 1 & check_init != 2){
-                                    return;
-                                }
-
-                                var sourced = this.querySelector('img');
-                                
-                                var d = sourced.cloneNode(true);
-                                if(check_init == 2){
-
-                                    if(checkcover == 1){
-                                    if(chec_cover_num.length != 0){
-                                        if(sourced.alt == chec_cover_num[0]){
-                                            return;
-                                        }
-                                    
-                                    }
-                                    SourceAray.unshift(sourced.id);
-                                    sourced.id = SourceAray.pop();
-                                    
-                                    sourced.parentElement.style.zIndex = 20;
-                                    sourced.style.zIndex = -20;
-                                    
-                                    console.log(sourced.parentElement);
-                                    resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
-                                    console.log(sourced.alt);
-                                    switch (sourced.alt) {
-                                        case "0": {
-                                            sourced.style.transform = "translate(100%, 100%)";                             
-                                            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-                                        }
-                                        case "1": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(0%, 100%)";                             
-                                            break;
-                                        }
-                                        case "2": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(-100%, 100%)";                             
-                                            break;
-                                        }
-                                        case "3": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(100%, 0%)";                             
-                                            break;
-                                        }
-                                        case "5": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(-100%, 0%)";                             
-                                            break;
-                                        }
-                                        case "6": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(100%, -100%)";                             
-                                            break;
-                                        }
-                                        case "7": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(0%, -100%)";                             
-                                            break;
-                                        }
-                                        case "8": {
-                                            // 是去判斷 action === 'say_hi'
-                                            sourced.style.transform = "translate(-100%, -100%)";                             
-                                            break;
-                                        }
-                                        
-                                        default: {
-                                            break;
-                                        }
-                                        }
-                                
-                                    
-                                        setTimeout(function() {
-                                                // sourced.style.transform = "translate(0px, 0px)";
-                                                sourced.style.transform = "";
-                                                
-                                                resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
-                                                chec_cover_num.push(sourced.alt);
-                                                sourced.src = "https://img.lovepik.com/element/40118/6391.png_300.png";
-                                                console.log("蓋牌數"+chec_cover_num.length)
-                                                        setTimeout(function() {
-                                                        if(chec_cover_num.length == 2){
+                                                        console.log("test測試"+imgtran.style.transform);
+                                                        if (imgtran.style.transform == "") {
                                                         
-                                                            resource.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
-                                                            resource.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
-                                                            document.getElementById("mask").style.display = "none";
-                                                            document.getElementById("mask").style.zIndex = "0";
-                                                            document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
-                                                            checkcover = 0;
-                                                            chec_cover_num = [];//覆蓋完牌後，退出回合;
-                                                            check_init = 0;//動作完成，退出回合;
-                                                            check_ended = 1;//動作完成，退出回合，至下一round;
-                                                            document.getElementById("regret").style.display = "none";
+                                                            if (userHandchoice.length < 3) {
+                                                                console.log("test移動");
+                                                                imgtran.style.transform = "translate(0px, -30px)";
+                                                                userHandchoice.push(imgtran.id);
+                                                                console.log(userHandchoice);
+                                                            }
 
+                                                        } else {
+                                                            console.log("tes失敗");
+
+                                                            imgtran.style.transform = "";
+                                                            userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
+                                                            console.log(userHandchoice);
                                                         }
-                                                    }, 500);
-                                                }, 500);
-                                            
-                                        return;
-                                    }
-                                }//選擇蓋資源牌
-                                if(check_init == 1){//選擇資源
-                                    sourced.id = SourceAray.pop();
-                                    d.style.height = "18vh";
-                                    d.style.transform = "";
-                                    for (var i = 0; i < $(".hand-area td").length; i++) {
-                                        if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
-                                            document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);
-                                            document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
+                                                    }
+                                                    else if(check_init == 0){
+
+                                                        document.getElementById("round_move_back").style.display = "block";
+                                                        document.getElementById("round_move_back").style.zIndex = 99;
+                                                        document.getElementById("round_move_font").style.display = "block";
+                                                        document.getElementById("round_move_font").style.zIndex = 100;
+                                                        return;
+                                                    }
+
+                                                });
+
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                                });
+                                                check_init = 0;//動作完成，退出回合
+                                                check_ended = 1;//動作完成，退出回合，至下一round;
+                                                document.getElementById("regret").style.display = "none";
+
+                                                break;
+                                            }
+                                        }
+                            }
+                            for(var techss = 0;techss < userHand[sessionStorage.getItem('player')]["Tech"].length;techss ++){
+                                for (var b = 0; b < $(".tech tr").length; b++) {
+                                    var check = 0;//檢測欄位是否為1
+                
+                                    for (var c = 0; c < document.getElementsByClassName('tech')[0].querySelectorAll('tr').length; c++) {
+                                        if (document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "")
+                                        {
+                                            var d = document.createElement("img");
+                                            d.id =  userHand[sessionStorage.getItem('player')]["Tech"][techss];
+                                            d.src = "static/mission.jpg";
+                                            d.style.height = "8vh";
+                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
+                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
                                                 event = event || window.event; // 兼容性處理
+                                                console.log("迴圈處理");
 
                                                 var mouseX = event.clientX;
                                                 var mouseY = event.clientY;
-                                                document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:Delta、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
+                                                document.getElementsByClassName('tooltips')[0].innerHTML = "任務 : <br/>" + d.id + "技術 : XXX"
                                                 document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
                                                 document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                                                 document.getElementsByClassName('tooltips')[0].style.display = "block"
                                             });
 
-                                            document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
-                                                if(check_init == 3){
-                                                    console.log("test測試");
-                                                    var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
-                                                    console.log("test測試"+imgtran);
-
-                                                    console.log("test測試"+imgtran.style.transform);
-                                                    if (imgtran.style.transform == "") {
-                                                    
-                                                        if (userHandchoice.length < 3) {
-                                                            console.log("test移動");
-                                                            imgtran.style.transform = "translate(0px, -30px)";
-                                                            userHandchoice.push(imgtran.id);
-                                                            console.log(userHandchoice);
-                                                        }
-
-                                                    } else {
-                                                        console.log("tes失敗");
-
-                                                        imgtran.style.transform = "";
-                                                        userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
-                                                        console.log(userHandchoice);
-                                                    }
-                                                }
-                                                else if(check_init == 0){
-
-                                                    document.getElementById("round_move_back").style.display = "block";
-                                                    document.getElementById("round_move_back").style.zIndex = 99;
-                                                    document.getElementById("round_move_font").style.display = "block";
-                                                    document.getElementById("round_move_font").style.zIndex = 100;
-                                                    return;
-                                                }
-
-                                            });
-
-                                            document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
+                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
                                                 document.getElementsByClassName('tooltips')[0].style.display = "none"
                                             });
-                                            check_init = 0;//動作完成，退出回合
-                                            check_ended = 1;//動作完成，退出回合，至下一round;
-                                            document.getElementById("regret").style.display = "none";
-
+                                            check = 1
                                             break;
                                         }
+                                    
+                                    }
+                                    if (check == 1) {
+                                        break;
                                     }
                                 }
-                                
-                                
-                            });
-                            resource.querySelectorAll('td')[a].addEventListener('mousemove', function (event) {
-                                event = event || window.event; // 兼容性處理
-
-                                var mouseX = event.clientX;
-                                var mouseY = event.clientY;
-                                console.log(this.querySelector('img').id);
-                                document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id
-                                document.getElementsByClassName('tooltips')[0].style.left = mouseX+"px";
-                                document.getElementsByClassName('tooltips')[0].style.top = mouseY+"px";
-                                document.getElementsByClassName('tooltips')[0].style.display = "block"
-                                console.log('滑鼠的X座標為: ' + mouseX + ', 滑鼠的Y座標為: ' + mouseY);
-                                if(checkcover == 1){
-                                    this.style.backgroundColor = "red";
-                                }
-
-                            });
-                            resource.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
-                                document.getElementsByClassName('tooltips')[0].style.display = "none"
-                                if(checkcover == 1){
-                                    this.style.backgroundColor = "";
-                                }
-                            });
+                            }
+                            // <img class="img-thumbnail" src="https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con" alt="6" id="Delta11" style="height: 18vh;">
                         }
-                        else{
-                    resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
-                        if(check_init == 2){
+                    
+                    //給定資源及綁定功能
+                    for (var a = 0; a < resource.querySelectorAll('td').length; a++) {
+                            if (a != 4) {
 
-                            document.getElementById("mask").style.display="block";
-                            document.getElementById("mask").style.zIndex = "20";
-                            //document.getElementById("mask").style.zIndex = "20";
-                            document.getElementsByClassName("board_desk")[0].style.zIndex = "100";
-                            checkcover = 1;
-                            
-                        }
-                        
-                    })
-                }
-                    }
-                    //給定任務並綁定功能
-                    for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
-                        if (a <= 5) {
-                            if (a == 4){
-                                //初階任務牌堆
-                                missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                    if(check_init == 4){
-                                        document.getElementById("mask").style.display="block";
-                                        document.getElementById("mask").style.zIndex = "20";
-                                        //document.getElementById("mask").style.zIndex = "20";
-                                        document.getElementsByClassName("mission")[0].style.zIndex = "100";
-                                        checkcover = 1;
-                                        document.getElementById("mask").addEventListener("click",function(){
-                                        document.getElementById("mask").style.display = "none";
-                                        document.getElementById("mask").style.zIndex = "0";
-                                        document.getElementsByClassName("mission")[0].style.zIndex = "0";
-                                        checkcover = 0;
-                                    })
-                                    }
-                                    else if(check_init == 0){
+                                if(!sessionStorage.getItem('Initshuffle')){//初次進入時，統一分配
+                                    resource.querySelectorAll('td')[a].querySelector('img').id = SourceAray.pop();
+                                    resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
+                                    Table_Source[a] = resource.querySelectorAll('td')[a].querySelector('img').id;
+                                }
+                                else{//第一次以上進入時，取Table_Source值
+                                    resource.querySelectorAll('td')[a].querySelector('img').id =  Table_Source[a];
+                                    resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
+                                }
+                                resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                                    console.log("狀態"+check_init)
+                                    if(check_init == 0){
 
                                         document.getElementById("round_move_back").style.display = "block";
                                         document.getElementById("round_move_back").style.zIndex = 99;
@@ -846,65 +744,658 @@
                                         document.getElementById("round_move_font").style.zIndex = 100;
                                         return;
                                     }
+                                
+                                    if(check_init != 1 & check_init != 2){
+                                        return;
+                                    }
+
+                                    var sourced = this.querySelector('img');
+                                    
+                                    var d = sourced.cloneNode(true);
+                                    if(check_init == 2){//覆蓋牌面
+
+                                        if(checkcover == 1){
+                                        if(chec_cover_num.length != 0){
+                                            if(sourced.alt == chec_cover_num[0]){//防止已被覆蓋的牌再被選取
+                                                return;
+                                            }
+                                        
+                                        }
+                                        SourceAray.unshift(sourced.id);
+                                        sourced.id = SourceAray.pop();
+                                        Table_Source[sourced.alt] = sourced.id;//更新即時桌面資源
+                                        sourced.parentElement.style.zIndex = 20;
+                                        sourced.style.zIndex = -20;
+                                        resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
+                                        switch (sourced.alt) {
+                                            case "0": {
+                                                sourced.style.transform = "translate(100%, 100%)";                             
+                                                break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+                                            }
+                                            case "1": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(0%, 100%)";                             
+                                                break;
+                                            }
+                                            case "2": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(-100%, 100%)";                             
+                                                break;
+                                            }
+                                            case "3": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(100%, 0%)";                             
+                                                break;
+                                            }
+                                            case "5": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(-100%, 0%)";                             
+                                                break;
+                                            }
+                                            case "6": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(100%, -100%)";                             
+                                                break;
+                                            }
+                                            case "7": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(0%, -100%)";                             
+                                                break;
+                                            }
+                                            case "8": {
+                                                // 是去判斷 action === 'say_hi'
+                                                sourced.style.transform = "translate(-100%, -100%)";                             
+                                                break;
+                                            }
+                                            
+                                            default: {
+                                                break;
+                                            }
+                                            }
+                                    
+                                        
+                                            setTimeout(function() {
+                                                    // sourced.style.transform = "translate(0px, 0px)";
+                                                    sourced.style.transform = "";
+                                                    
+                                                    resource.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
+                                                    chec_cover_num.push(sourced.alt);
+                                                    sourced.src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                                    console.log("蓋牌數"+chec_cover_num.length)
+                                                            setTimeout(function() {
+                                                            if(chec_cover_num.length == 2){
+                                                            
+                                                                resource.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                                                resource.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "https://img.ixintu.com/download/jpg/202001/685de4b8d9f54ffe6d8a533e92772584.jpg!con";
+                                                                document.getElementById("mask").style.display = "none";
+                                                                document.getElementById("mask").style.zIndex = "0";
+                                                                document.getElementsByClassName("board_desk")[0].style.zIndex = "0";
+                                                                checkcover = 0;
+                                                                chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                                check_init = 0;//動作完成，退出回合;
+                                                                check_ended = 1;//動作完成，退出回合，至下一round;
+                                                                document.getElementById("regret").style.display = "none";
+
+                                                            }
+                                                        }, 500);
+                                                    }, 500);
+                                                
+                                            return;
+                                        }
+                                    }//選擇蓋資源牌
+                                    if(check_init == 1){//選擇資源
+                                        sourced.id = SourceAray.pop();
+                                        
+                                        Table_Source[sourced.alt] = sourced.id;//更新即時桌面資源
+
+                                        d.style.height = "18vh";
+                                        d.style.transform = "";
+                                        for (var i = 0; i < $(".hand-area td").length; i++) {
+                                            if (document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].innerHTML == "") {
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].appendChild(d);//將卡牌從牌堆中轉至手牌區
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mousemove', function (event) {
+                                                    event = event || window.event; // 兼容性處理
+
+                                                    var mouseX = event.clientX;
+                                                    var mouseY = event.clientY;
+                                                    document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:Delta、箭體、酬載:BF) : <br/>" + this.querySelector('img').id 
+                                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                                });
+
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img').addEventListener('click', function (event) {
+                                                    if(check_init == 3){
+                                                        console.log("test測試");
+                                                        var imgtran = document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].querySelector('img');
+                                                        console.log("test測試"+imgtran);
+
+                                                        console.log("test測試"+imgtran.style.transform);
+                                                        if (imgtran.style.transform == "") {
+                                                        
+                                                            if (userHandchoice.length < 3) {
+                                                                console.log("test移動");
+                                                                imgtran.style.transform = "translate(0px, -30px)";
+                                                                userHandchoice.push(imgtran.id);
+                                                                console.log(userHandchoice);
+                                                            }
+
+                                                        } else {
+                                                            console.log("tes失敗");
+
+                                                            imgtran.style.transform = "";
+                                                            userHandchoice = userHandchoice.filter(item => item !== imgtran.id);
+                                                            console.log(userHandchoice);
+                                                        }
+                                                    }
+                                                    else if(check_init == 0){
+
+                                                        document.getElementById("round_move_back").style.display = "block";
+                                                        document.getElementById("round_move_back").style.zIndex = 99;
+                                                        document.getElementById("round_move_font").style.display = "block";
+                                                        document.getElementById("round_move_font").style.zIndex = 100;
+                                                        return;
+                                                    }
+
+                                                });
+
+                                                document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
+                                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                                });
+                                                check_init = 0;//動作完成，退出回合
+                                                check_ended = 1;//動作完成，退出回合，至下一round;
+                                                document.getElementById("regret").style.display = "none";
+
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    
+                                });
+                                resource.querySelectorAll('td')[a].addEventListener('mousemove', function (event) {
+                                    event = event || window.event; // 兼容性處理
+
+                                    var mouseX = event.clientX;
+                                    var mouseY = event.clientY;
+                                    // console.log(this.querySelector('img').id);
+                                    document.getElementsByClassName('tooltips')[0].innerHTML = "資源(燃料:LOX、箭體、酬載:BF) : <br/>" + this.querySelector('img').id
+                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX+"px";
+                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY+"px";
+                                    document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                    // console.log('滑鼠的X座標為: ' + mouseX + ', 滑鼠的Y座標為: ' + mouseY);
+                                    if(checkcover == 1){
+                                        this.style.backgroundColor = "red";
+                                    }
+
+                                });
+                                resource.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
+                                    document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                    if(checkcover == 1){
+                                        this.style.backgroundColor = "";
+                                    }
                                 });
                             }
-                            if (a != 4 & a != 0 & a != 2) {
-                                //洗牌分配任務
-                                var Begineer = Preliminary.pop();
-                                console.log(Begineer);
-                                missions.querySelectorAll('td')[a].querySelector('img').className = "";
-                                missions.querySelectorAll('td')[a].querySelector('img').id = Begineer["mission"];
-                                missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Payload']+" ";
-                                for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                    missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Body'][clsname] + " ";
-                                }
-                                
-                                missions.querySelectorAll('td')[a].querySelector('img').alt = Begineer['Furl']
-                                
-                                    //初階任務
-                                    missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
+                            else{
+                        resource.querySelectorAll('td')[a].addEventListener('click', function (e) {
+                            if(check_init == 2){
 
+                                document.getElementById("mask").style.display="block";
+                                document.getElementById("mask").style.zIndex = "20";
+                                //document.getElementById("mask").style.zIndex = "20";
+                                document.getElementsByClassName("board_desk")[0].style.zIndex = "100";
+                                checkcover = 1;
+                                
+                            }
+                            
+                        })
+                    }
+                        }
+                    //給定任務並綁定功能
+                    for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
+                            if (a <= 5) {
+                                if (a == 4){
+                                    //初階任務牌堆
+                                    missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                        if(check_init == 4){
+                                            document.getElementById("mask").style.display="block";
+                                            document.getElementById("mask").style.zIndex = "20";
+                                            //document.getElementById("mask").style.zIndex = "20";
+                                            document.getElementsByClassName("mission")[0].style.zIndex = "100";
+                                            checkcover = 1;
+                                            document.getElementById("mask").addEventListener("click",function(){
+                                            document.getElementById("mask").style.display = "none";
+                                            document.getElementById("mask").style.zIndex = "0";
+                                            document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                            checkcover = 0;
+                                        })
+                                        }
+                                        else if(check_init == 0){
+
+                                            document.getElementById("round_move_back").style.display = "block";
+                                            document.getElementById("round_move_back").style.zIndex = 99;
+                                            document.getElementById("round_move_font").style.display = "block";
+                                            document.getElementById("round_move_font").style.zIndex = 100;
+                                            return;
+                                        }
+                                    });
+                                }
+                                if (a != 4 & a != 0 & a != 2) {
+                                    //洗牌分配任務
+                                    if(!sessionStorage.getItem('Initshuffle')){//初次進入時，統一分配
+                                        var Begineer = Preliminary.pop();
+                                        missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                                        missions.querySelectorAll('td')[a].querySelector('img').id = Begineer["mission"];
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Payload']+" ";
+                                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                            missions.querySelectorAll('td')[a].querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                        }
+                                        missions.querySelectorAll('td')[a].querySelector('img').alt = Begineer['Furl'];
+                                        //即時更新用
+                                        Table_Pre[a] = {
+                                                        "mission":missions.querySelectorAll('td')[a].querySelector('img').id,
+                                                        "Payload":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ')[0],
+                                                        "Body":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ').slice(0,-1),
+                                                        "Furl":missions.querySelectorAll('td')[a].querySelector('img').alt,
+                                                        };
+                                    }else{
+                                        missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                                        missions.querySelectorAll('td')[a].querySelector('img').id = Table_Pre[a]["mission"];
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Table_Pre[a]['Payload']+" ";
+                                        for (var clsname = 0; clsname < Table_Pre[a]['Body'].length; clsname++) {
+                                            missions.querySelectorAll('td')[a].querySelector('img').className += Table_Pre[a]['Body'][clsname] + " ";
+                                        }
+                                        missions.querySelectorAll('td')[a].querySelector('img').alt = Table_Pre[a]['Furl'];
+                                        //即時更新用
+                                        // Table_Pre[a] = {
+                                        //                 "mission":missions.querySelectorAll('td')[a].querySelector('img').id,
+                                        //                 "Payload":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ')[0],
+                                        //                 "Body":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ').slice(0,-1),
+                                        //                 "Furl":missions.querySelectorAll('td')[a].querySelector('img').alt,
+                                        //                 };
+                                    }
+                                    
+
+                                        //初階任務
+                                        missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
+
+                                            var needed = this.querySelector('img').className.split(' ');
+                                            var needed_furl = this.querySelector('img').alt;
+                                            event = event || window.event; // 兼容性處理
+                                            var mouseX = event.clientX;
+                                            var mouseY = event.clientY;
+                                            document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求酬載 : "
+                                                + needed[0] +
+                                                "<br/>需求燃料 : " +
+                                                needed_furl +
+                                                "<br/>需求箭體 : " + needed.slice(1) +
+                                                "<br/>任務名稱 : " + this.querySelector('img').id;
+                                            ;
+                                            document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                            document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                            document.getElementsByClassName('tooltips')[0].style.display = "block";
+                                            var resource_code = "";
+                                            var confirm_mission_payload = 0;
+                                            var confirm_mission_body = 0;
+                                            var confirm_mission_push = 0;
+                                            var choicebodyweight = 0;
+                                            for (var i = 0; i < userHandchoice.length; i++) {
+                                                console.log(userHandchoice[i]);
+                                                resource_code = userHandchoice[i];
+                                                if (resource_code == needed[0])//比對酬載
+                                                {
+                                                    confirm_mission_payload = 1;
+                                                }
+                                                for (var ri = 1; ri <= needed.length-1; ri++) {
+                                                    if (resource_code == needed[ri])//比對箭體
+                                                    {
+                                                        confirm_mission_body = 1;
+                                                        choicebodyweight = resource_code.slice(-1);
+                                                    }
+                                                }
+                                                if (resource_code.slice(0,-2) == "Delta"){
+                                                    confirm_mission_push = resource_code.slice(-2);
+                                                }
+
+                                            }
+                                            
+                                            document.getElementsByClassName('tooltips')[0].style.color = "red";
+                                            console.log("確認酬載 : "+confirm_mission_payload);
+                                            console.log("確認箭伸 : "+choicebodyweight);
+                                            console.log("確認燃料 : "+confirm_mission_push)
+                                            console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                                            //檢測燃料是否足以執行任務
+                                            if(confirm_mission_push != 0){
+                                                var checkFurl = parseInt(confirm_mission_push) - parseInt(choicebodyweight);
+                                                if(checkFurl>=needed_furl){
+                                                    confirm_mission_push = 1;
+                                                }else{
+                                                    confirm_mission_push = 0;
+                                                }
+                                            }
+                                            console.log("推進燃料數 : "+checkFurl);
+                                            var confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
+                                            console.log(confirm_mission);
+                                            if (confirm_mission >= 3) {
+                                                $("#" + this.querySelector('img').id).animate({ top: "-10px" });
+                                                $("#" + this.querySelector('img').id).animate({ top: "0px" });
+                                                //$(this.querySelector('img')[0]).animate('top', "0px");
+                                                console.log("#" + this.querySelector('img').id);
+                                                document.getElementsByClassName('tooltips')[0].style.color = "green";
+
+                                            }
+                                        });
+                                        missions.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
+                                            document.getElementsByClassName('tooltips')[0].style.display = "none";
+                                            $("#" + this.querySelector('img').id).stop();
+                                            document.getElementsByClassName('tooltips')[0].style.color = "black";
+
+                                        });
+                                        missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                            
+                                            var rowIndex = this.parentNode.rowIndex;
+                                            var cellIndex = this.cellIndex;
+                                            console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
+                                            if(checkcover == 1){
+                                                    if(chec_cover_num.length != 0){
+                                                        if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
+                                                            return;
+                                                        }
+                                                    
+                                                    }
+                                                    
+                                                    var needed = this.querySelector('img').className.split(' ');
+                                                    var needed_furl = this.querySelector('img').alt;
+                                                    if (needed.slice(1)[needed.slice(1).length - 1] == '') {
+                                                        // 如果是空值，使用 pop 方法刪除最後一個元素                                           
+                                                        needed.pop();
+                                                        console.log( needed.slice(1))
+                                                    }
+
+                                                    Preliminary.unshift({"mission":this.querySelector('img').id,"Payload":needed[0],"Body":needed.slice(1),"Furl":needed_furl});
+                                                
+                                                    //重新賦值
+                                                    var Begineer = Preliminary.pop();
+                                                    console.log(Begineer);
+                                                    this.querySelector('img').className = "";
+                                                    this.querySelector('img').id = Begineer["mission"];
+                                                    this.querySelector('img').className += Begineer['Payload']+" ";
+                                                    for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                                        this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                                    }
+                                                    this.querySelector('img').alt = Begineer['Furl']
+                                                    
+
+                                                    missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
+                                                    
+                                                    switch (cellIndex) {
+                                                        case 0: {
+                                                            this.querySelector('img').style.transform = "translate(300%, 0%)";                             
+                                                            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+                                                        }
+                                                        case 1: {
+                                                            this.querySelector('img').style.transform = "translate(0%, 100%)";                             
+                                                            break;
+                                                        }
+                                                        case 2: {
+                                                            this.querySelector('img').style.transform = "translate(-300%, 0%)";                             
+                                                            break;
+                                                        }
+                                                    
+                                                        default: {
+                                                            break;
+                                                        }
+                                                        }
+                                                
+                                                    var mission_ID = this.querySelector('img').id;
+                                                    setTimeout(function() {
+                                                            // sourced.style.transform = "translate(0px, 0px)";
+                                                            console.log("ID = "+mission_ID);
+
+                                                            console.log(document.getElementById(mission_ID));
+                                                            document.getElementById(mission_ID).style.transform = "";
+                                                            
+                                                            missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
+                                                            chec_cover_num.push([rowIndex,cellIndex]);
+                                                            document.getElementById(mission_ID).src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                                            console.log("蓋牌數"+chec_cover_num.length)
+                                                                    setTimeout(function() {
+                                                                    if(chec_cover_num.length == 2){
+                                                                    
+                                                                        //missions.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "static/mission.jpg";
+                                                                        //missions.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "static/mission.jpg";
+                                                                        missions.rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
+                                                                        missions.rows[chec_cover_num[1][0]].cells[chec_cover_num[1][1]].querySelector('img').src = "static/mission.jpg";
+                                                                        document.getElementById("mask").style.display = "none";
+                                                                        document.getElementById("mask").style.zIndex = "0";
+                                                                        document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                                                        checkcover = 0;
+                                                                        chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                                        check_ended = 1;//動作完成，退出回合，至下一round;
+                                                                    }
+                                                                }, 500);
+                                                            }, 500);
+                                                    document.getElementById("regret").style.display = "none";//動作完成，上一步按鈕移除
+                                                    check_init = 0;//動作完成，歸零
+                                                    return;
+                                                }
+                                                
+                                                if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                                $('#mission_complete').show();
+                                                //document.getElementById("mission_complete").style.display = "block";
+                                                $('#mission_complete').animate({height:"1400px"},2500);
+                                                console.log("任務執行成功");
+                                            
+                                                var needed = this.querySelector('img').className.split(' ');
+                                                //console.log(needed);
+                                                var check_push = 0;//確認推進器
+                                                var check_payload = 0;//確認酬載
+                                                var push_no = 0;//確認推進器序號
+                                                var payload_no = 0;//確認酬載序號
+                                                var pushid = "";
+                                                // console.log("刪除 : ", payloadid)
+                                                for(var choicI = 0;choicI < userHandchoice.length;choicI ++){
+
+                                                    if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
+                                                        pushid = "#"+userHandchoice[choicI];
+                                                        document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
+                                                    }else{
+                                                        pushid = "#"+userHandchoice[choicI];
+                                                        document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
+                                                    }
+                                                    
+                                                }
+                                                
+                                                //document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
+                                                userHandchoice = [];
+                                                //任務執行成功內容
+                                                var mission_done = this.querySelector('img');
+
+
+                                                for (var b = 0; b < $(".tech tr").length; b++) {
+                                                    var check = 0;//檢測欄位是否為1
+                                                    console.log('測試b:', b);
+                                                    console.log(document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
+                                                    for (var c = 0; c < document.getElementsByClassName('tech')[0].querySelectorAll('tr').length; c++) {
+                                                        console.log('測試c:', c);
+                                                        if (document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "")
+                                                        {
+                                                            var d = mission_done.cloneNode(true);//複製
+                                                            mission_done.id = Preliminary.pop();
+                                                            d.style.height = "8vh";
+                                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
+                                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
+                                                                event = event || window.event; // 兼容性處理
+                                                                console.log("迴圈處理");
+
+                                                                var mouseX = event.clientX;
+                                                                var mouseY = event.clientY;
+                                                                document.getElementsByClassName('tooltips')[0].innerHTML = "任務 : <br/>" + this.querySelector('img').id + "技術 : XXX"
+                                                                document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
+                                                                document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
+                                                                document.getElementsByClassName('tooltips')[0].style.display = "block"
+                                                            });
+
+                                                            document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
+                                                                document.getElementsByClassName('tooltips')[0].style.display = "none"
+                                                            });
+                                                            check = 1
+                                                            break;
+                                                        }
+                                                    
+                                                    }
+                                                    if (check == 1) {
+                                                        break;
+                                                    }
+                                                }
+                                                
+                                                setTimeout(function() {
+                                                    $('#mission_complete').animate({height:"0px"},2500);
+                                                    setTimeout(function() {
+                                                        $('#mission_complete').hide();
+                                                        }, 2100);
+                                                        
+
+                                                        //document.getElementById("mission_complete").style.display = "none";
+                                                }, 4000);
+
+                                                
+                                                var Begineer = Preliminary.pop();
+                                                console.log(Begineer);
+                                                this.querySelector('img').className = "";
+                                                this.querySelector('img').id = Begineer["mission"];
+                                                this.querySelector('img').className += Begineer['Payload']+" ";
+                                                for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
+                                                    this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                                }
+                                                this.querySelector('img').alt = Begineer['Furl']
+                                                document.getElementById("regret").style.display = "none";
+                                                check_ended = 1;//動作完成，退出回合，至下一round;
+                                                check_init = 0;//動作完成，退出回合;
+                                                
+                                            }
+                                        });
+                                    }
+                            }
+                            else {
+                                if (a == 7){
+                                    
+                                        //初階任務牌堆
+                                        missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
+                                            if(check_init == 4){
+                                                document.getElementById("mask").style.display="block";
+                                                document.getElementById("mask").style.zIndex = "20";
+                                                //document.getElementById("mask").style.zIndex = "20";
+                                                document.getElementsByClassName("mission")[0].style.zIndex = "100";
+                                                checkcover = 1;
+                                                document.getElementById("mask").addEventListener("click",function(){
+                                                    document.getElementById("mask").style.display = "none";
+                                                    document.getElementById("mask").style.zIndex = "0";
+                                                    document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                                    checkcover = 0;
+                                                })
+                                            }
+                                            else if(check_init == 0){
+
+                                                document.getElementById("round_move_back").style.display = "block";
+                                                document.getElementById("round_move_back").style.zIndex = 99;
+                                                document.getElementById("round_move_font").style.display = "block";
+                                                document.getElementById("round_move_font").style.zIndex = 100;
+                                                return;
+                                            }
+                                        });
+                                    
+                                }
+                                if (a != 7 & a != 9 & a != 11) {
+                                    if(!sessionStorage.getItem('Initshuffle')){//初次進入時，統一分配
+                                        var Medium = Intermed.pop();
+                                        missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                                        missions.querySelectorAll('td')[a].querySelector('img').id = Medium["mission"];
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][0] + " ";
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][1] + " ";
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Payload'] + " ";
+                                        for (var clsname = 0; clsname < Medium['Body'].length; clsname++) {
+                                            missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Body'][clsname] + " ";
+                                        }
+
+                                        missions.querySelectorAll('td')[a].querySelector('img').alt = Medium['Furl']
+                                        //中階任務
+                                        //即時更新用
+                                        Table_Inter[a] = {
+                                                        "tech":[Medium['tech'][0],Medium['tech'][1]],
+                                                        "mission":missions.querySelectorAll('td')[a].querySelector('img').id,
+                                                        "Payload":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ')[0],
+                                                        "Body":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ').slice(0,-1),
+                                                        "Furl":missions.querySelectorAll('td')[a].querySelector('img').alt,
+                                                        
+                                                        };
+                                    }else{
+                                        missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                                        missions.querySelectorAll('td')[a].querySelector('img').id = Table_Inter[a]["mission"];
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Table_Inter[a]['tech'][0] + " ";
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Table_Inter[a]['tech'][1] + " ";
+                                        missions.querySelectorAll('td')[a].querySelector('img').className += Table_Inter[a]['Payload'] + " ";
+                                        for (var clsname = 0; clsname < Table_Inter[a]['Body'].length; clsname++) {
+                                            missions.querySelectorAll('td')[a].querySelector('img').className += Table_Inter[a]['Body'][clsname] + " ";
+                                        }
+
+                                        missions.querySelectorAll('td')[a].querySelector('img').alt = Table_Inter[a]['Furl']
+                                        //中階任務
+                                        //即時更新用
+                                        // Table_Inter[a] = {
+                                        //                 "mission":missions.querySelectorAll('td')[a].querySelector('img').id,
+                                        //                 "Payload":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ')[0],
+                                        //                 "Body":missions.querySelectorAll('td')[a].querySelector('img').className.split(' ').slice(0,-1),
+                                        //                 "Furl":missions.querySelectorAll('td')[a].querySelector('img').alt,
+                                        //                 };
+                                    }
+
+                                    missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
+                                        console.log(this.querySelector('img').className);
                                         var needed = this.querySelector('img').className.split(' ');
                                         var needed_furl = this.querySelector('img').alt;
                                         event = event || window.event; // 兼容性處理
                                         var mouseX = event.clientX;
                                         var mouseY = event.clientY;
-                                        document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求酬載 : "
-                                            + needed[0] +
+                                        document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求任務 : " + needed[0] + "/" + needed[1]+
+
+                                            "<br/>需求酬載 : "
+                                            + needed[2] +
                                             "<br/>需求燃料 : " +
                                             needed_furl +
-                                            "<br/>需求箭體 : " + needed.slice(1) +
-                                            "<br/>任務名稱 : " + this.querySelector('img').id;
+                                            "<br/>需求箭體 : " + needed.slice(3) +
+                                            "<br/>任務報酬 : " + this.querySelector('img').id;
                                         ;
                                         document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
                                         document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                                         document.getElementsByClassName('tooltips')[0].style.display = "block";
                                         var resource_code = "";
+                                        var confirm_mission = 0;
+                                        var confirm_tech = 0;
+
                                         var confirm_mission_payload = 0;
                                         var confirm_mission_body = 0;
                                         var confirm_mission_push = 0;
                                         var choicebodyweight = 0;
                                         for (var i = 0; i < userHandchoice.length; i++) {
-                                            console.log(userHandchoice[i]);
-                                            resource_code = userHandchoice[i];
-                                            if (resource_code == needed[0])//比對酬載
-                                            {
-                                                confirm_mission_payload = 1;
-                                            }
-                                            for (var ri = 1; ri <= needed.length-1; ri++) {
-                                                if (resource_code == needed[ri])//比對箭體
+                                                console.log(userHandchoice[i]);
+                                                resource_code = userHandchoice[i];
+                                                if (resource_code == needed[2])//比對酬載
                                                 {
-                                                    confirm_mission_body = 1;
-                                                    choicebodyweight = resource_code.slice(-1);
+                                                    confirm_mission_payload = 1;
                                                 }
-                                            }
-                                            if (resource_code.slice(0,-2) == "Delta"){
-                                                confirm_mission_push = resource_code.slice(-2);
-                                            }
+                                                for (var ri = 3; ri <= needed.length-1; ri++) {
+                                                    if (resource_code == needed[ri])//比對箭體
+                                                    {
+                                                        confirm_mission_body = 1;
+                                                        choicebodyweight = resource_code.slice(-1);
+                                                    }
+                                                }
+                                                if (resource_code.slice(0,-2) == "Delta"){
+                                                    confirm_mission_push = resource_code.slice(-2);
+                                                }
 
                                         }
-                                        
-                                        document.getElementsByClassName('tooltips')[0].style.color = "red";
                                         console.log("確認酬載 : "+confirm_mission_payload);
                                         console.log("確認箭伸 : "+choicebodyweight);
                                         console.log("確認燃料 : "+confirm_mission_push)
@@ -918,15 +1409,28 @@
                                                 confirm_mission_push = 0;
                                             }
                                         }
-                                        console.log("推進燃料數 : "+checkFurl);
-                                        var confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
-                                        console.log(confirm_mission);
-                                        if (confirm_mission >= 3) {
+
+                                            console.log("推進燃料數 : "+checkFurl);
+                                        //技能確認
+                                        for (var a = 0; a < document.getElementsByClassName("tech")[0].querySelectorAll('img').length; a++) {
+                                            tech_code = document.getElementsByClassName("tech")[0].querySelectorAll('img')[a].id;
+                                            for (var ri = 0; ri <= needed.length; ri++) {
+                                                if (tech_code == needed[ri]) {
+                                                    confirm_tech += 1;
+                                                }
+                                            }
+
+                                        }
+                                        document.getElementsByClassName('tooltips')[0].style.color = "red";
+                                        confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
+                                        console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
+                                        if (confirm_mission >= 3 & confirm_tech >= 1) {
                                             $("#" + this.querySelector('img').id).animate({ top: "-10px" });
                                             $("#" + this.querySelector('img').id).animate({ top: "0px" });
                                             //$(this.querySelector('img')[0]).animate('top', "0px");
                                             console.log("#" + this.querySelector('img').id);
                                             document.getElementsByClassName('tooltips')[0].style.color = "green";
+
 
                                         }
                                     });
@@ -936,109 +1440,104 @@
                                         document.getElementsByClassName('tooltips')[0].style.color = "black";
 
                                     });
+
                                     missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                        
-                                        var rowIndex = this.parentNode.rowIndex;
-                                        var cellIndex = this.cellIndex;
-                                        console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
-                                        if(checkcover == 1){
-                                                if(chec_cover_num.length != 0){
-                                                    if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
-                                                        return;
+                                            var rowIndex = this.parentNode.rowIndex;
+                                            var cellIndex = this.cellIndex;
+                                            console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
+                                            if(checkcover == 1){
+                                                    if(chec_cover_num.length != 0){
+                                                        if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
+                                                            return;
+                                                        }
+                                                    
                                                     }
+                                                    
+                                                    var needed = this.querySelector('img').className.split(' ');
+                                                    var need_tech = needed.slice(0,2)
+                                                    var needed_furl = this.querySelector('img').alt;
+                                                    if (needed.slice(1)[needed.slice(1).length - 1] == '') {
+                                                        // 如果是空值，使用 pop 方法刪除最後一個元素                                           
+                                                        needed.pop();
+                                                        console.log( needed.slice(1))
+                                                    }
+                                                    //{ 'tech': ["A1A1", "A1A2"], 'mission': "A1A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+                                                    console.log({'tech': need_tech,"mission":this.querySelector('img').id,"Payload":needed[2],"Body":needed.slice(3),"Furl":needed_furl});
+                                                    Intermed.unshift({'tech': need_tech,"mission":this.querySelector('img').id,"Payload":needed[2],"Body":needed.slice(3),"Furl":needed_furl});
                                                 
-                                                }
-                                                
-                                                var needed = this.querySelector('img').className.split(' ');
-                                                var needed_furl = this.querySelector('img').alt;
-                                                if (needed.slice(1)[needed.slice(1).length - 1] == '') {
-                                                    // 如果是空值，使用 pop 方法刪除最後一個元素                                           
-                                                    needed.pop();
-                                                    console.log( needed.slice(1))
-                                                }
+                                                    //重新賦值
+                                                    var Medium = Intermed.pop();
+                                                    this.querySelector('img').className = "";
+                                                    this.querySelector('img').id = Medium["mission"];
+                                                    this.querySelector('img').className += Medium['tech'][0] + " ";
+                                                    this.querySelector('img').className += Medium['tech'][1] + " ";
+                                                    this.querySelector('img').className += Medium['Payload'] + " ";
+                                                    for (var clsname = 0; clsname < Medium['Body'].length; clsname++) {
+                                                        this.querySelector('img').className += Medium['Body'][clsname] + " ";
+                                                    }
+                                                    this.querySelector('img').alt = Medium['Furl']
+                                                    
 
-                                                Preliminary.unshift({"mission":this.querySelector('img').id,"Payload":needed[0],"Body":needed.slice(1),"Furl":needed_furl});
-                                            
-                                                //重新賦值
-                                                var Begineer = Preliminary.pop();
-                                                console.log(Begineer);
-                                                this.querySelector('img').className = "";
-                                                this.querySelector('img').id = Begineer["mission"];
-                                                this.querySelector('img').className += Begineer['Payload']+" ";
-                                                for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                                    this.querySelector('img').className += Begineer['Body'][clsname] + " ";
-                                                }
-                                                this.querySelector('img').alt = Begineer['Furl']
+                                                    missions.querySelectorAll('td')[7].querySelector('img').style.transform = "translate(0px, -100%)";
+                                                    
+                                                    switch (cellIndex) {
+                                                        case 0: {
+                                                            this.querySelector('img').style.transform = "translate(300%, 0%)";                             
+                                                            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+                                                        }
+                                                        case 1: {
+                                                            this.querySelector('img').style.transform = "translate(0%, -100%)";                             
+                                                            break;
+                                                        }
+                                                        case 2: {
+                                                            this.querySelector('img').style.transform = "translate(-300%, 0%)";                             
+                                                            break;
+                                                        }
+                                                    
+                                                        default: {
+                                                            break;
+                                                        }
+                                                        }
                                                 
+                                                    var mission_ID = this.querySelector('img').id;
+                                                    setTimeout(function() {
+                                                            // sourced.style.transform = "translate(0px, 0px)";
+                                                            console.log("ID = "+mission_ID);
 
-                                                missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, -100%)";
-                                                
-                                                switch (cellIndex) {
-                                                    case 0: {
-                                                        this.querySelector('img').style.transform = "translate(300%, 0%)";                             
-                                                        break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-                                                    }
-                                                    case 1: {
-                                                        this.querySelector('img').style.transform = "translate(0%, 100%)";                             
-                                                        break;
-                                                    }
-                                                    case 2: {
-                                                        this.querySelector('img').style.transform = "translate(-300%, 0%)";                             
-                                                        break;
-                                                    }
-                                                
-                                                    default: {
-                                                        break;
-                                                    }
-                                                    }
-                                            
-                                                var mission_ID = this.querySelector('img').id;
-                                                setTimeout(function() {
-                                                        // sourced.style.transform = "translate(0px, 0px)";
-                                                        console.log("ID = "+mission_ID);
-
-                                                        console.log(document.getElementById(mission_ID));
-                                                        document.getElementById(mission_ID).style.transform = "";
-                                                        
-                                                        missions.querySelectorAll('td')[4].querySelector('img').style.transform = "translate(0px, 0px)";
-                                                        chec_cover_num.push([rowIndex,cellIndex]);
-                                                        document.getElementById(mission_ID).src = "https://img.lovepik.com/element/40118/6391.png_300.png";
-                                                        console.log("蓋牌數"+chec_cover_num.length)
-                                                                setTimeout(function() {
-                                                                if(chec_cover_num.length == 2){
-                                                                
-                                                                    //missions.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "static/mission.jpg";
-                                                                    //missions.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "static/mission.jpg";
-                                                                    missions.rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
-                                                                    missions.rows[chec_cover_num[1][0]].cells[chec_cover_num[1][1]].querySelector('img').src = "static/mission.jpg";
-                                                                    document.getElementById("mask").style.display = "none";
-                                                                    document.getElementById("mask").style.zIndex = "0";
-                                                                    document.getElementsByClassName("mission")[0].style.zIndex = "0";
-                                                                    checkcover = 0;
-                                                                    chec_cover_num = [];//覆蓋完牌後，退出回合;
-                                                                    check_ended = 1;//動作完成，退出回合，至下一round;
-                                                                }
+                                                            console.log(document.getElementById(mission_ID));
+                                                            document.getElementById(mission_ID).style.transform = "";
+                                                            
+                                                            missions.querySelectorAll('td')[7].querySelector('img').style.transform = "translate(0px, 0px)";
+                                                            chec_cover_num.push([rowIndex,cellIndex]);
+                                                            document.getElementById(mission_ID).src = "https://img.lovepik.com/element/40118/6391.png_300.png";
+                                                            console.log("蓋牌數"+chec_cover_num.length)
+                                                                    setTimeout(function() {
+                                                                    if(chec_cover_num.length == 2){
+                                                                    
+                                                                        //missions.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "static/mission.jpg";
+                                                                        //missions.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "static/mission.jpg";
+                                                                        missions.rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
+                                                                        missions.rows[chec_cover_num[1][0]].cells[chec_cover_num[1][1]].querySelector('img').src = "static/mission.jpg";
+                                                                        document.getElementById("mask").style.display = "none";
+                                                                        document.getElementById("mask").style.zIndex = "0";
+                                                                        document.getElementsByClassName("mission")[0].style.zIndex = "0";
+                                                                        checkcover = 0;
+                                                                        chec_cover_num = [];//覆蓋完牌後，退出回合;
+                                                                        check_ended = 1;//動作完成，退出回合，至下一round;
+                                                                    }
+                                                                }, 500);
                                                             }, 500);
-                                                        }, 500);
-                                                document.getElementById("regret").style.display = "none";//動作完成，上一步按鈕移除
-                                                check_init = 0;//動作完成，歸零
-                                                return;
-                                            }
-                                            
-                                            if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
-                                            $('#mission_complete').show();
-                                            //document.getElementById("mission_complete").style.display = "block";
-                                            $('#mission_complete').animate({height:"1400px"},2500);
-                                            console.log("任務執行成功");
-                                        
-                                            var needed = this.querySelector('img').className.split(' ');
-                                            //console.log(needed);
-                                            var check_push = 0;//確認推進器
-                                            var check_payload = 0;//確認酬載
-                                            var push_no = 0;//確認推進器序號
-                                            var payload_no = 0;//確認酬載序號
-                                            var pushid = "";
-                                            // console.log("刪除 : ", payloadid)
+                                                            document.getElementById("regret").style.display = "none";//移除上一步
+                                                            check_init = 0;//動作完成，歸零
+                
+                                                    return;
+                                                }
+                                        if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
+                                                $('#mission_complete').show();
+                                                //document.getElementById("mission_complete").style.display = "block";
+                                                $('#mission_complete').animate({height:"1400px"},2500);
+
+                                            //先刪除手牌
                                             for(var choicI = 0;choicI < userHandchoice.length;choicI ++){
 
                                                 if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
@@ -1046,48 +1545,50 @@
                                                     document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
                                                 }else{
                                                     pushid = "#"+userHandchoice[choicI];
-                                                    document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
-                                                }
-                                                
+                                                        document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
+                                                    }
                                             }
-                                            
                                             //document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
                                             userHandchoice = [];
+
+                                            console.log("任務執行成功");
                                             //任務執行成功內容
                                             var mission_done = this.querySelector('img');
 
+                                        
 
-                                            for (var b = 0; b < $(".tech tr").length; b++) {
+                                            console.log(d)
+                                            for (var b = 0; b < $(".build tr").length; b++) {
+
                                                 var check = 0;//檢測欄位是否為1
                                                 console.log('測試b:', b);
-                                                console.log(document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
-                                                for (var c = 0; c < document.getElementsByClassName('tech')[0].querySelectorAll('tr').length; c++) {
+                                                console.log(document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
+                                                for (var c = 0; c < document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length; c++) {
                                                     console.log('測試c:', c);
-                                                    if (document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "")
-                                                    {
+                                                    if (document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "") {
                                                         var d = mission_done.cloneNode(true);//複製
-                                                        mission_done.id = Preliminary.pop();
+                                                        mission_done.id = Intermediate.pop();
                                                         d.style.height = "8vh";
-                                                        document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
-                                                        document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
+                                                        document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
+                                                        document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
                                                             event = event || window.event; // 兼容性處理
                                                             console.log("迴圈處理");
 
                                                             var mouseX = event.clientX;
                                                             var mouseY = event.clientY;
-                                                            document.getElementsByClassName('tooltips')[0].innerHTML = "任務 : <br/>" + this.querySelector('img').id + "技術 : XXX"
+                                                            document.getElementsByClassName('tooltips')[0].innerHTML = "建設 : <br/>" + this.querySelector('img').id
                                                             document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
                                                             document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
                                                             document.getElementsByClassName('tooltips')[0].style.display = "block"
                                                         });
 
-                                                        document.getElementsByClassName('tech')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
+                                                        document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
                                                             document.getElementsByClassName('tooltips')[0].style.display = "none"
                                                         });
                                                         check = 1
                                                         break;
                                                     }
-                                                
+
                                                 }
                                                 if (check == 1) {
                                                     break;
@@ -1095,353 +1596,66 @@
                                             }
                                             
                                             setTimeout(function() {
-                                                $('#mission_complete').animate({height:"0px"},2500);
-                                                setTimeout(function() {
-                                                    $('#mission_complete').hide();
+                                                    $('#mission_complete').animate({height:"0px"},2500);
+                                                    setTimeout(function() {
+                                                        $('#mission_complete').hide();
                                                     }, 2100);
-                                                    
-
                                                     //document.getElementById("mission_complete").style.display = "none";
                                             }, 4000);
-
                                             
-                                            var Begineer = Preliminary.pop();
-                                            console.log(Begineer);
+                                            var Medium = Intermed.pop();
+                                            console.log(Medium);
                                             this.querySelector('img').className = "";
-                                            this.querySelector('img').id = Begineer["mission"];
-                                            this.querySelector('img').className += Begineer['Payload']+" ";
+                                            this.querySelector('img').id = Medium["mission"];
+                                            this.querySelector('img').className += Medium['tech'][0] + " ";
+                                            this.querySelector('img').className += Medium['tech'][1] + " ";
+                                            this.querySelector('img').className += Medium['Payload'] + " ";
                                             for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                                this.querySelector('img').className += Begineer['Body'][clsname] + " ";
+                                                this.querySelector('img').className += Medium['Body'][clsname] + " ";
                                             }
-                                            this.querySelector('img').alt = Begineer['Furl']
                                             document.getElementById("regret").style.display = "none";
                                             check_ended = 1;//動作完成，退出回合，至下一round;
                                             check_init = 0;//動作完成，退出回合;
+                                        
                                             
                                         }
+
                                     });
                                 }
-                        }
-                        else {
-                            if (a == 7){
-                                
-                                    //初階任務牌堆
-                                    missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                        if(check_init == 4){
-                                            document.getElementById("mask").style.display="block";
-                                            document.getElementById("mask").style.zIndex = "20";
-                                            //document.getElementById("mask").style.zIndex = "20";
-                                            document.getElementsByClassName("mission")[0].style.zIndex = "100";
-                                            checkcover = 1;
-                                            document.getElementById("mask").addEventListener("click",function(){
-                                                document.getElementById("mask").style.display = "none";
-                                                document.getElementById("mask").style.zIndex = "0";
-                                                document.getElementsByClassName("mission")[0].style.zIndex = "0";
-                                                checkcover = 0;
-                                            })
-                                        }
-                                        else if(check_init == 0){
-
-                                            document.getElementById("round_move_back").style.display = "block";
-                                            document.getElementById("round_move_back").style.zIndex = 99;
-                                            document.getElementById("round_move_font").style.display = "block";
-                                            document.getElementById("round_move_font").style.zIndex = 100;
-                                            return;
-                                        }
-                                    });
-                                
-                            }
-                            if (a != 7 & a != 9 & a != 11) {
-                                //missions.querySelectorAll('td')[a].querySelector('img').id = Intermediate.pop();
-                                var Medium = Intermed.pop();
-                                missions.querySelectorAll('td')[a].querySelector('img').className = "";
-                                missions.querySelectorAll('td')[a].querySelector('img').id = Medium["mission"];
-                                missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][0] + " ";
-                                missions.querySelectorAll('td')[a].querySelector('img').className += Medium['tech'][1] + " ";
-                                missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Payload'] + " ";
-                                for (var clsname = 0; clsname < Medium['Body'].length; clsname++) {
-                                    missions.querySelectorAll('td')[a].querySelector('img').className += Medium['Body'][clsname] + " ";
-                                }
-
-                                missions.querySelectorAll('td')[a].querySelector('img').alt = Medium['Furl']
-                                //中階任務
-
-                                missions.querySelectorAll('td')[a].addEventListener('mouseover', function (event) {
-                                    console.log(this.querySelector('img').className);
-                                    var needed = this.querySelector('img').className.split(' ');
-                                    var needed_furl = this.querySelector('img').alt;
-                                    event = event || window.event; // 兼容性處理
-                                    var mouseX = event.clientX;
-                                    var mouseY = event.clientY;
-                                    document.getElementsByClassName('tooltips')[0].innerHTML = "任務條件 <br/>需求任務 : " + needed[0] + "/" + needed[1]+
-
-                                        "<br/>需求酬載 : "
-                                        + needed[2] +
-                                        "<br/>需求燃料 : " +
-                                        needed_furl +
-                                        "<br/>需求箭體 : " + needed.slice(3) +
-                                        "<br/>任務報酬 : " + this.querySelector('img').id;
-                                    ;
-                                    document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
-                                    document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
-                                    document.getElementsByClassName('tooltips')[0].style.display = "block";
-                                    var resource_code = "";
-                                    var confirm_mission = 0;
-                                    var confirm_tech = 0;
-
-                                    var confirm_mission_payload = 0;
-                                    var confirm_mission_body = 0;
-                                    var confirm_mission_push = 0;
-                                    var choicebodyweight = 0;
-                                    for (var i = 0; i < userHandchoice.length; i++) {
-                                            console.log(userHandchoice[i]);
-                                            resource_code = userHandchoice[i];
-                                            if (resource_code == needed[2])//比對酬載
-                                            {
-                                                confirm_mission_payload = 1;
-                                            }
-                                            for (var ri = 3; ri <= needed.length-1; ri++) {
-                                                if (resource_code == needed[ri])//比對箭體
-                                                {
-                                                    confirm_mission_body = 1;
-                                                    choicebodyweight = resource_code.slice(-1);
-                                                }
-                                            }
-                                            if (resource_code.slice(0,-2) == "Delta"){
-                                                confirm_mission_push = resource_code.slice(-2);
-                                            }
-
-                                    }
-                                    console.log("確認酬載 : "+confirm_mission_payload);
-                                    console.log("確認箭伸 : "+choicebodyweight);
-                                    console.log("確認燃料 : "+confirm_mission_push)
-                                    console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
-                                    //檢測燃料是否足以執行任務
-                                    if(confirm_mission_push != 0){
-                                        var checkFurl = parseInt(confirm_mission_push) - parseInt(choicebodyweight);
-                                        if(checkFurl>=needed_furl){
-                                            confirm_mission_push = 1;
-                                        }else{
-                                            confirm_mission_push = 0;
-                                        }
-                                    }
-
-                                        console.log("推進燃料數 : "+checkFurl);
-                                    //技能確認
-                                    for (var a = 0; a < document.getElementsByClassName("tech")[0].querySelectorAll('img').length; a++) {
-                                        tech_code = document.getElementsByClassName("tech")[0].querySelectorAll('img')[a].id;
-                                        for (var ri = 0; ri <= needed.length; ri++) {
-                                            if (tech_code == needed[ri]) {
-                                                confirm_tech += 1;
-                                            }
-                                        }
-
-                                    }
-                                    document.getElementsByClassName('tooltips')[0].style.color = "red";
-                                    confirm_mission = confirm_mission_body + confirm_mission_payload + confirm_mission_push;
-                                    console.log("檢測結果:(判斷任務是否能執行)", confirm_mission);
-                                    if (confirm_mission >= 3 & confirm_tech >= 1) {
-                                        $("#" + this.querySelector('img').id).animate({ top: "-10px" });
-                                        $("#" + this.querySelector('img').id).animate({ top: "0px" });
-                                        //$(this.querySelector('img')[0]).animate('top', "0px");
-                                        console.log("#" + this.querySelector('img').id);
-                                        document.getElementsByClassName('tooltips')[0].style.color = "green";
-
-
-                                    }
-                                });
-                                missions.querySelectorAll('td')[a].addEventListener('mouseleave', function (event) {
-                                    document.getElementsByClassName('tooltips')[0].style.display = "none";
-                                    $("#" + this.querySelector('img').id).stop();
-                                    document.getElementsByClassName('tooltips')[0].style.color = "black";
-
-                                });
-
-                                missions.querySelectorAll('td')[a].addEventListener('click', function (event) {
-                                        var rowIndex = this.parentNode.rowIndex;
-                                        var cellIndex = this.cellIndex;
-                                        console.log("第"+rowIndex+"列，第"+cellIndex+"欄");
-                                        if(checkcover == 1){
-                                                if(chec_cover_num.length != 0){
-                                                    if(rowIndex== chec_cover_num[0][0]  & cellIndex == chec_cover_num[0][1] ){
-                                                        return;
-                                                    }
-                                                
-                                                }
-                                                
-                                                var needed = this.querySelector('img').className.split(' ');
-                                                var need_tech = needed.slice(0,2)
-                                                var needed_furl = this.querySelector('img').alt;
-                                                if (needed.slice(1)[needed.slice(1).length - 1] == '') {
-                                                    // 如果是空值，使用 pop 方法刪除最後一個元素                                           
-                                                    needed.pop();
-                                                    console.log( needed.slice(1))
-                                                }
-                                                //{ 'tech': ["A1A1", "A1A2"], 'mission': "A1A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
-                                                console.log({'tech': need_tech,"mission":this.querySelector('img').id,"Payload":needed[2],"Body":needed.slice(3),"Furl":needed_furl});
-                                                Intermed.unshift({'tech': need_tech,"mission":this.querySelector('img').id,"Payload":needed[2],"Body":needed.slice(3),"Furl":needed_furl});
-                                            
-                                                //重新賦值
-                                                var Medium = Intermed.pop();
-                                                this.querySelector('img').className = "";
-                                                this.querySelector('img').id = Medium["mission"];
-                                                this.querySelector('img').className += Medium['tech'][0] + " ";
-                                                this.querySelector('img').className += Medium['tech'][1] + " ";
-                                                this.querySelector('img').className += Medium['Payload'] + " ";
-                                                for (var clsname = 0; clsname < Medium['Body'].length; clsname++) {
-                                                    this.querySelector('img').className += Medium['Body'][clsname] + " ";
-                                                }
-                                                this.querySelector('img').alt = Medium['Furl']
-                                                
-
-                                                missions.querySelectorAll('td')[7].querySelector('img').style.transform = "translate(0px, -100%)";
-                                                
-                                                switch (cellIndex) {
-                                                    case 0: {
-                                                        this.querySelector('img').style.transform = "translate(300%, 0%)";                             
-                                                        break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-                                                    }
-                                                    case 1: {
-                                                        this.querySelector('img').style.transform = "translate(0%, -100%)";                             
-                                                        break;
-                                                    }
-                                                    case 2: {
-                                                        this.querySelector('img').style.transform = "translate(-300%, 0%)";                             
-                                                        break;
-                                                    }
-                                                
-                                                    default: {
-                                                        break;
-                                                    }
-                                                    }
-                                            
-                                                var mission_ID = this.querySelector('img').id;
-                                                setTimeout(function() {
-                                                        // sourced.style.transform = "translate(0px, 0px)";
-                                                        console.log("ID = "+mission_ID);
-
-                                                        console.log(document.getElementById(mission_ID));
-                                                        document.getElementById(mission_ID).style.transform = "";
-                                                        
-                                                        missions.querySelectorAll('td')[7].querySelector('img').style.transform = "translate(0px, 0px)";
-                                                        chec_cover_num.push([rowIndex,cellIndex]);
-                                                        document.getElementById(mission_ID).src = "https://img.lovepik.com/element/40118/6391.png_300.png";
-                                                        console.log("蓋牌數"+chec_cover_num.length)
-                                                                setTimeout(function() {
-                                                                if(chec_cover_num.length == 2){
-                                                                
-                                                                    //missions.querySelectorAll('td')[chec_cover_num[0]].querySelector('img').src = "static/mission.jpg";
-                                                                    //missions.querySelectorAll('td')[chec_cover_num[1]].querySelector('img').src = "static/mission.jpg";
-                                                                    missions.rows[chec_cover_num[0][0]].cells[chec_cover_num[0][1]].querySelector('img').src = "static/mission.jpg";
-                                                                    missions.rows[chec_cover_num[1][0]].cells[chec_cover_num[1][1]].querySelector('img').src = "static/mission.jpg";
-                                                                    document.getElementById("mask").style.display = "none";
-                                                                    document.getElementById("mask").style.zIndex = "0";
-                                                                    document.getElementsByClassName("mission")[0].style.zIndex = "0";
-                                                                    checkcover = 0;
-                                                                    chec_cover_num = [];//覆蓋完牌後，退出回合;
-                                                                    check_ended = 1;//動作完成，退出回合，至下一round;
-                                                                }
-                                                            }, 500);
-                                                        }, 500);
-                                                        document.getElementById("regret").style.display = "none";//移除上一步
-                                                        check_init = 0;//動作完成，歸零
-            
-                                                return;
-                                            }
-                                    if (document.getElementsByClassName('tooltips')[0].style.color == "green") {
-                                            $('#mission_complete').show();
-                                            //document.getElementById("mission_complete").style.display = "block";
-                                            $('#mission_complete').animate({height:"1400px"},2500);
-
-                                        //先刪除手牌
-                                        for(var choicI = 0;choicI < userHandchoice.length;choicI ++){
-
-                                            if(userHandchoice[choicI].length == 7 || userHandchoice[choicI].length == 3 ){
-                                                pushid = "#"+userHandchoice[choicI];
-                                                document.getElementsByClassName("hand-area")[0].querySelector(pushid).parentElement.innerHTML = "";
-                                            }else{
-                                                pushid = "#"+userHandchoice[choicI];
-                                                    document.getElementsByClassName("hand-area")[0].querySelector(pushid).style.transform = "";
-                                                }
-                                        }
-                                        //document.getElementsByClassName("hand-area")[0].querySelector(payloadid).parentElement.innerHTML = "";
-                                        userHandchoice = [];
-
-                                        console.log("任務執行成功");
-                                        //任務執行成功內容
-                                        var mission_done = this.querySelector('img');
-
-                                    
-
-                                        console.log(d)
-                                        for (var b = 0; b < $(".build tr").length; b++) {
-
-                                            var check = 0;//檢測欄位是否為1
-                                            console.log('測試b:', b);
-                                            console.log(document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length);
-                                            for (var c = 0; c < document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td').length; c++) {
-                                                console.log('測試c:', c);
-                                                if (document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].innerHTML == "") {
-                                                    var d = mission_done.cloneNode(true);//複製
-                                                    mission_done.id = Intermediate.pop();
-                                                    d.style.height = "8vh";
-                                                    document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].appendChild(d);
-                                                    document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mousemove', function (event) {
-                                                        event = event || window.event; // 兼容性處理
-                                                        console.log("迴圈處理");
-
-                                                        var mouseX = event.clientX;
-                                                        var mouseY = event.clientY;
-                                                        document.getElementsByClassName('tooltips')[0].innerHTML = "建設 : <br/>" + this.querySelector('img').id
-                                                        document.getElementsByClassName('tooltips')[0].style.left = mouseX + "px";
-                                                        document.getElementsByClassName('tooltips')[0].style.top = mouseY + "px";
-                                                        document.getElementsByClassName('tooltips')[0].style.display = "block"
-                                                    });
-
-                                                    document.getElementsByClassName('build')[0].querySelectorAll('tr')[b].querySelectorAll('td')[c].addEventListener('mouseleave', function (event) {
-                                                        document.getElementsByClassName('tooltips')[0].style.display = "none"
-                                                    });
-                                                    check = 1
-                                                    break;
-                                                }
-
-                                            }
-                                            if (check == 1) {
-                                                break;
-                                            }
-                                        }
-                                        
-                                        setTimeout(function() {
-                                                $('#mission_complete').animate({height:"0px"},2500);
-                                                setTimeout(function() {
-                                                    $('#mission_complete').hide();
-                                                }, 2100);
-                                                //document.getElementById("mission_complete").style.display = "none";
-                                        }, 4000);
-                                        
-                                        var Medium = Intermed.pop();
-                                        console.log(Medium);
-                                        this.querySelector('img').className = "";
-                                        this.querySelector('img').id = Medium["mission"];
-                                        this.querySelector('img').className += Medium['tech'][0] + " ";
-                                        this.querySelector('img').className += Medium['tech'][1] + " ";
-                                        this.querySelector('img').className += Medium['Payload'] + " ";
-                                        for (var clsname = 0; clsname < Begineer['Body'].length; clsname++) {
-                                            this.querySelector('img').className += Medium['Body'][clsname] + " ";
-                                        }
-                                        document.getElementById("regret").style.display = "none";
-                                        check_ended = 1;//動作完成，退出回合，至下一round;
-                                        check_init = 0;//動作完成，退出回合;
-                                       
-                                        
-                                    }
-
-                                });
                             }
                         }
+                    
+                    //給定Session
+                    if(!sessionStorage.getItem('Initshuffle')){
+                        sessionStorage.setItem('Initshuffle', "done");
+                        $.ajax({
+                                    type: "POST",
+                                    url:  "resource",
+                                    data: JSON.stringify({
+                                        "SourceAray":SourceAray,//loading 資源牌
+                                        "Preliminary":Preliminary,    //loading 初階任務
+                                        "Intermed":Intermed,     //loading 中階任務
+                                        "user":sessionStorage.getItem('player'),
+                                        "userHands":userHands,
+                                        "userTech":userTech,
+                                        "userBuild":userBuild,
+                                        "Table_Source":Table_Source,//即時更新桌面
+                                        "Table_Pre":Table_Pre,      //即時更新桌面
+                                        "Table_Inter":Table_Inter,  //即時更新桌面
+                                    }),
+                                    contentType: "application/json; charset=utf-8",
+                                    dataType: "json",
+                                    success: function (data) {
+                                        console.log("pass");
+                                    }
+                                });
                     }
-                }
-            });
+                    }
+                    
+                });
+            
+            
+            
             document.getElementsByClassName("col-md-8")[0].querySelectorAll("table")[0].addEventListener("click",function(){
                 if(check_init == 99){
                     $("#block-round").fadeIn(100);
@@ -1471,6 +1685,7 @@
             })  
 
         });//The End of the $(document).ready();
+        
         function initPlay(it){
             console.log(it.id)
             if(it.id == "SelctSource"){

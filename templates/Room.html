@@ -157,6 +157,12 @@ function getUrlC(){
     // urlParams.set('state', playerID);
     // var newUrl = window.location.pathname + '?' + urlParams.toString();
     // window.history.pushState({}, '', newUrl);
+    var detect_men = {{shuff}};
+    console.log("初次載入 : "+detect_men);
+    if(detect_men == 1){
+        sessionStorage.removeItem('player');//重置session
+        sessionStorage.removeItem('Initshuffle');
+    }
     if (typeof(Storage) !== "undefined") {
     // 如果 sessionStorage 中沒有我們設定的 session
             if (!sessionStorage.getItem('player')) {
