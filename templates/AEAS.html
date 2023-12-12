@@ -295,7 +295,7 @@
         // 2023/11/20 TODO : 已將玩家狀態(僅手牌、無技術與建設)；資源任務牌都POST到後端，剩餘需讓後端回送回資源值 以更新全局
         // 2023/11/22 TODO : 處理重新載入的bug，新增了所有變數的可觀頁面，確認當前卡牌狀況，剩餘須完成部分，從python後端行:302開始 將手牌、技術與建設加入到個人的內容中。
         // 2023/11/27 TODO : 已處理網頁reload後，牌面刷新問題，尚未解決 1.玩家手牌reload後刷新歸零(11/28以處理) 2. 後端的資源及任務牌在玩家結束回合後不會更新
-        // 2023/12/01 TODO : 發現BUG : 1.玩家回合時，刷新頁面會導致pass掉回合2.玩家選擇資源後，其他玩家牌面沒有同步更新
+        // 2023/12/01 TODO : 發現BUG : 1.玩家回合時，刷新頁面會導致pass掉回合(已修正)2.玩家選擇資源後，其他玩家牌面沒有同步更新
 
         var userHandchoice = [];
         var checkcover = 0;//當使用者點擊覆蓋資源時為1
@@ -422,12 +422,14 @@
         //鋁合金係數1.5x初級推進(2) = 3
         //鈦合金係數2x初級推進(2) = 4
         setInterval(() => {
+            var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
             
             $.ajax({
                 type: "POST",
                 url:  "round",
                 data: JSON.stringify({
                     "user_state": check_ended,
+                    "user_id":document.getElementById("avatar").alt,
                 }),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -440,13 +442,28 @@
                     //         Table_Inter[TS]
                     //     }
                     // }
+                    // Table_Source = data["Table_Source"];//loading 資源牌
+                    // Table_Pre = data["Table_Pre"];    //loading 初階任務
+                    // Table_Inter = data["Table_Inter"];     //loading 中階任務
 
-                    var orderarea_img = document.getElementById("orderSheet").querySelectorAll("img")
-
+                    
                     for (var key = 0;key < orderarea_img.length;key++ ) {
                         if(document.getElementById("avatar").alt != data["order_now"]){
                             check_init = 99;//確認是否為玩家回合，若否則無法執行動作。
+                            //在非自己回合時，持續更新桌面牌
+                            $.ajax({
+                                type: "GET",
+                                url:  "resource",
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log('刷新中');
+                                    console.log(data["Table_Source"]);
+                                    refresh_Table(data["Table_Source"],data["Table_Pre"],data["Table_Inter"]);
+                                }
+                            })
                         }else{
+                            //當進入自己回合時
                             if(check_rounds == 0){
                                 check_init = 0;
                                 check_rounds = 1;//歸零回合開始-僅執行一次
@@ -454,6 +471,17 @@
                                 document.getElementById("round_move_back").style.zIndex = 99;
                                 document.getElementById("round_move_font").style.display = "block";
                                 document.getElementById("round_move_font").style.zIndex = 100;
+                                $.ajax({
+                                type: "GET",
+                                url:  "resource",
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    console.log('刷新中');
+                                    console.log(data["Table_Source"]);
+                                    refresh_Table(data["Table_Source"],data["Table_Pre"],data["Table_Inter"]);
+                                }
+                            })
                             }
                             
                         }
@@ -491,21 +519,38 @@
                                         "Table_Source":Table_Source,//即時更新桌面
                                         "Table_Pre":Table_Pre,      //即時更新桌面
                                         "Table_Inter":Table_Inter,  //即時更新桌面
+                                        "upd":1,                    //檢查玩家同時更新
                                     }),
                                     contentType: "application/json; charset=utf-8",
                                     dataType: "json",
                                     success: function (data) {
                                         console.log("pass");
                                         check_rounds = 0;//回合結束
+                                        refresh_Table(Table_Source,Table_Pre,Table_Inter);
                                     }
                                 });
                             }
                             //break;
-                        }else{
+                        }
+                        else{
                             // $("#" + orderarea_img[key].id).css("top","0px" );
                             // $("#" + orderarea_img[key].id).stop();
+                            
                             document.getElementById("orderSheet").rows[1].cells[key+1].style.color = "black";//非該回合玩家，字體顯示黑色
-
+                            // if(data["updTable"] != 0){
+                            //     $.ajax({
+                            //         type: "GET",
+                            //         url:  "resource",
+                            //         contentType: "application/json; charset=utf-8",
+                            //         dataType: "json",
+                            //         success: function (data) {
+                            //             console.log('刷新中');
+                            //             refresh_Table(data["resource"],data["Pre"],data["Inter"]);
+                            //         }
+                            //     })
+                            // }
+                            //refresh_Table();
+                         
                         }
                     }      
                     
@@ -514,7 +559,50 @@
                     console.log("請求失敗");
                 }
             });
+           
     }, 500);
+
+    function refresh_Table(UTable_Source,UTable_Pre,UTable_Inter){
+        var resource = document.getElementsByClassName('board_desk')[0];//.querySelectorAll('td')
+        var missions = document.getElementsByClassName('mission')[0];//.querySelectorAll('td')
+
+        for (var a = 0; a < resource.querySelectorAll('td').length; a++) {
+        if (a != 4) {
+                console.log(UTable_Source[a]);
+                resource.querySelectorAll('td')[a].querySelector('img').id =  UTable_Source[a];
+                resource.querySelectorAll('td')[a].querySelector('img').alt = a; 
+                
+            }
+        }
+        for (var a = 0; a < missions.querySelectorAll('td').length; a++) {
+            if (a <= 5) {
+            
+                if (a != 4 & a != 0 & a != 2) {
+
+                    missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                    missions.querySelectorAll('td')[a].querySelector('img').id = UTable_Pre[a]["mission"];
+                    missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Pre[a]['Payload']+" ";
+                    for (var clsname = 0; clsname < UTable_Pre[a]['Body'].length; clsname++) {
+                        missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Pre[a]['Body'][clsname] + " ";
+                    }
+                    missions.querySelectorAll('td')[a].querySelector('img').alt = UTable_Pre[a]['Furl'];
+                    
+                }
+            }else{
+                if (a != 7 & a != 9 & a != 11) {                            
+                    missions.querySelectorAll('td')[a].querySelector('img').className = "";
+                    missions.querySelectorAll('td')[a].querySelector('img').id = UTable_Inter[a]["mission"];
+                    missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Inter[a]['tech'][0] + " ";
+                    missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Inter[a]['tech'][1] + " ";
+                    missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Inter[a]['Payload'] + " ";
+                    for (var clsname = 0; clsname < UTable_Inter[a]['Body'].length; clsname++) {
+                        missions.querySelectorAll('td')[a].querySelector('img').className += UTable_Inter[a]['Body'][clsname] + " ";
+                    }
+                    missions.querySelectorAll('td')[a].querySelector('img').alt = UTable_Inter[a]['Furl']
+                }
+            }
+        }                       
+    }
         function corverItem(){//關閉黑屏
                 var yes = confirm("確定結束回合?");
                 if(yes){
@@ -673,9 +761,6 @@
                                                 document.getElementsByClassName('hand-area')[0].querySelectorAll('td')[i].addEventListener('mouseleave', function (event) {
                                                     document.getElementsByClassName('tooltips')[0].style.display = "none"
                                                 });
-                                                check_init = 0;//動作完成，退出回合
-                                                check_ended = 1;//動作完成，退出回合，至下一round;
-                                                document.getElementById("regret").style.display = "none";
 
                                                 break;
                                             }
@@ -1642,6 +1727,7 @@
                                         "Table_Source":Table_Source,//即時更新桌面
                                         "Table_Pre":Table_Pre,      //即時更新桌面
                                         "Table_Inter":Table_Inter,  //即時更新桌面
+                                        "upd":0,  
                                     }),
                                     contentType: "application/json; charset=utf-8",
                                     dataType: "json",

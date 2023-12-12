@@ -36,6 +36,7 @@ Source_random_check = 0 #檢查是否已經給定資源及任務亂數排序
 Table_Source = {} #當前牌面(資源牌)
 Table_Pre = {} #當前牌面(初階任務)
 Table_Inter = {} #當前牌面(中階任務)
+updTable = 0 #檢查有幾位玩家，當有玩家完成動作時，該值=玩家數量-1;每位玩家在各自更新完桌面資料後，去減去這數量，當值為0時則代表同步成功
 
 #資源牌
 SourceAray = [
@@ -298,17 +299,22 @@ def round():
     global SourceAray   #資源牌
     global Preliminary  #初階任務
     global Intermed     #中階任務
+    global Table_Source  # 桌面資源牌
+    global Table_Pre     # 桌面初階任務
+    global Table_Inter   # 桌面中階任務
+    global updTable   # 玩家桌面更新狀態
+
 
     data_res = request.get_json()
     # print(data_res["user_state"])#確認玩家是否已完成該回合動作
-    if data_res["user_state"] == 1:
+    if data_res["user_state"] == 1 and int(data_res["user_id"]) == Order_control:
         Order_control += 1
         print("當前順序",Order_control)
         if Order_control >= len(list(Order_shuffled.values())):
             Order_control = 0
     # print(Order_shuffled)
     # print(list(Order_shuffled.values())[0])
-    return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control,'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+    return jsonify({"userorder":list(Order_shuffled.values()),"order_now":Order_control,'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed,'Table_Source': Table_Source, 'Table_Pre': Table_Pre, 'Table_Inter': Table_Inter,'updTable':updTable})
 
 #資源牌庫
 @app.route('/resource', methods=['POST','GET'])
@@ -321,6 +327,7 @@ def resource():
     global Table_Pre     # 桌面初階任務
     global Table_Inter   # 桌面中階任務
     global usernum   # 玩家手牌
+    global updTable   # 玩家桌面更新狀態
     if request.method == 'GET':
         if Source_random_check == 0:#若牌堆還未洗牌
             print(SourceAray)
@@ -329,6 +336,8 @@ def resource():
             random.shuffle(Intermed)
             Source_random_check = 1
             return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+        if updTable != 0:
+            updTable -= 1
         return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed,'Table_Source': Table_Source, 'Table_Pre': Table_Pre, 'Table_Inter': Table_Inter,'User_Hand':usernum})
 
     else:
@@ -360,6 +369,10 @@ def resource():
         print(usernum[data_res["user"]]['Hand'])
         print(usernum[data_res["user"]]['Tech'])
         print(usernum[data_res["user"]]['Build'])
+
+        if data_res["upd"] == 1:
+            if updTable == 0:
+                updTable = len(usernum_list)-1
         # usernum[data_res['set_time']] = {'Hand': '', 'Tech': '', 'Build': ''}
 
         return jsonify({'result':"pass",'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
@@ -380,6 +393,7 @@ def info_ALL():
     global Table_Source  # 桌面資源牌
     global Table_Pre     # 桌面初階任務
     global Table_Inter   # 桌面中階任務
+    global updTable   # 確認玩家是否同步更希桌面牌
 
     return jsonify({'usernum(使用者的手牌)': usernum,
                     'usernum_list(用者及其選擇星球)':usernum_list,
@@ -395,6 +409,7 @@ def info_ALL():
                     'Table_Source_資源牌(桌面)': Table_Source,
                     'Table_Pre_初階任務(桌面)': Table_Pre,
                     'Table_Inter_中階任務(桌面)': Table_Inter,
+                    'AupdTable_(桌面同步更新-常駐為0)': updTable,
                     })
 if __name__ == "__main__":
 
