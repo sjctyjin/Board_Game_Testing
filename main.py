@@ -124,6 +124,40 @@ Intermed = [
 			{ 'tech': ["A1F1", "A1F2"], 'mission': "A1F", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
 
         ]
+
+# Intermed = [
+# 			{ 'tech': ["A1A1", "A1A2"], 'mission': "A1A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+# 			{ 'tech': ["A1B1", "A1B2"], 'mission': "A1B", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+# 			{ 'tech': ["B1A1", "B1A2"], 'mission': "B1A", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+# 			{ 'tech': ["B1B1", "B1B2"], 'mission': "B1B", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+# 			{ 'tech': ["B1C1", "B1C2"], 'mission': "B1C", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+# 			{ 'tech': ["C1B1", "C1B2"], 'mission': "C1B", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+# 			{ 'tech': ["C1C1", "C1C2"], 'mission': "C1C", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+# 			{ 'tech': ["C1D1", "C1D2"], 'mission': "C1D", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+# 			{ 'tech': ["D1C1", "D1C2"], 'mission': "D1C", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 9 },
+# 			{ 'tech': ["D1D1", "D1D2"], 'mission': "D1D", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+# 			{ 'tech': ["D1E1", "D1E2"], 'mission': "D1E", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 13 },
+# 			{ 'tech': ["E1D1", "E1D2"], 'mission': "E1D", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 14 },
+# 			{ 'tech': ["E1E1", "E1E2"], 'mission': "E1E", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 15 },
+# 			{ 'tech': ["E1F1", "E1F2"], 'mission': "E1F", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+# 			{ 'tech': ["F1E1", "F1E2"], 'mission': "F1E", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 12 },
+# 			{ 'tech': ["F1F1", "F1F2"], 'mission': "F1F", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+# 			{ 'tech': ["F1A1", "F1A2"], 'mission': "F1A", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 16 },
+# 			{ 'tech': ["A1F1", "A1F2"], 'mission': "A1F", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2"], "Furl": 11 },
+#         ]
+
+Final = {
+            "M1":{ 'tech': ["F1A","A1F","A1A","A1B","B1A"], 'mission': "A", "Payload": "AF1", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+            "M2":{ 'tech': ["A1B","B1A","B1B","B1C","C1B"], 'mission': "B", "Payload": "AF2", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+            "M3":{ 'tech': ["B1C","C1B","C1C","C1D","D1C"], 'mission': "C", "Payload": "AF3", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+            "M4":{ 'tech': ["C1D","D1C","D1D","D1E","E1D"], 'mission': "D", "Payload": "AF4", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+            "M5":{ 'tech': ["D1E","E1D","E1E","E1F","F1E"], 'mission': "E", "Payload": "AF5", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+            "M6":{ 'tech': ["E1F","F1E","F1F","F1A","A1F"], 'mission': "F", "Payload": "AF6", "Body": ["AL_4", "ACM_3", "CMC_2","Ti_1"], "Furl": 20 },
+        }
+# Final = {
+#             "M1":20 ,"M2":20 ,"M3": 20 ,"M4": 20 ,"M5": 20 ,"M6":20 ,
+#         }
+
 @app.route('/', methods=['GET'])
 def home():
     global start_game
@@ -131,6 +165,7 @@ def home():
     global Order_shuffled
     global random_change
     global usernum
+    global Final
 
     if start_game == 1:
         # if random_change == 0:
@@ -140,20 +175,21 @@ def home():
         #     # 將洗牌後的列表轉換回字典
         #     Order_shuffled = dict(buffer_user)
         #     random_change = 1#將此段移至start處
+        print("項目 : ",list(Order_shuffled.items()))
 
-
-        return render_template(f'AEAS.html',Orderlen=len(list(Order_shuffled.values())),Order=list(Order_shuffled.values()))
+        return render_template(f'AEAS.html',Orderlen=len(list(Order_shuffled.values())),Order=list(Order_shuffled.values()),Order_ID=list(Order_shuffled.items()),Final=Final)
     else:
         shuff = 0
         if usernum == {}:#若為空 代表無玩家登入
             shuff = 1 #檢查是否有玩家，若無玩家則前端直接刷新session
-        return render_template(f'Room.html',shuff=shuff)
+        return render_template(f'Room.html',shuff=shuff,Final=Final)
 
 
 #當人數超過限制則阻止進入
 @app.route('/Join', methods=['GET'])
 def room():
     global usernum_list
+    global Final  # 終極任務
     # value = session.get('jim')
     #
     #
@@ -161,7 +197,7 @@ def room():
     if len(usernum_list) == 4:
         return redirect('/blcok_area')
     else:
-        return render_template(f'Room.html')
+        return render_template(f'Room.html',Final = Final)
 
 @app.route('/blcok_area', methods=['GET'])
 def blcok():
@@ -200,6 +236,7 @@ def menber():
     global Order_shuffled
     global start_game
     global random_check
+    global Final
 
     print("使用者:", usernum)
     print(usernum_list)
@@ -218,7 +255,7 @@ def menber():
     #         return jsonify(
     #             {f"menber": usernum_list, "userlog": usernum, "states": start_game, "ordershu": Order_shuffled})
 
-    return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game,"ordershu":Order_shuffled})
+    return jsonify({f"menber":usernum_list,"userlog":usernum,"states":start_game,"ordershu":Order_shuffled,"Final":Final})
 #清空人員
 @app.route('/clear_user', methods=['POST'])
 def clear_menber():
@@ -306,7 +343,8 @@ def round():
 
 
     data_res = request.get_json()
-    # print(data_res["user_state"])#確認玩家是否已完成該回合動作
+    print("是否已完成 : ",data_res["user_state"])#確認玩家是否已完成該回合動作
+    print("當前玩家序號 : ",data_res["user_id"])#確認玩家是否已完成該回合動作
     if data_res["user_state"] == 1 and int(data_res["user_id"]) == Order_control:
         Order_control += 1
         print("當前順序",Order_control)
@@ -322,12 +360,15 @@ def resource():
     global SourceAray   #資源牌
     global Preliminary  #初階任務
     global Intermed     #中階任務
+    global Final        #終極任務
+
     global Source_random_check     #確認
     global Table_Source  # 桌面資源牌
     global Table_Pre     # 桌面初階任務
     global Table_Inter   # 桌面中階任務
     global usernum   # 玩家手牌
     global updTable   # 玩家桌面更新狀態
+
     if request.method == 'GET':
         if Source_random_check == 0:#若牌堆還未洗牌
             print(SourceAray)
@@ -335,7 +376,19 @@ def resource():
             random.shuffle(Preliminary)
             random.shuffle(Intermed)
             Source_random_check = 1
-            return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed})
+            """桌面資源牌面洗牌"""
+            TableS = ["0","1","2","3","5","6","7","8"]
+            for i in TableS:
+                Table_Source[i] = (SourceAray.pop())
+            """桌面初階牌面洗牌"""
+            TableP = ["1", "3", "5"]
+            for i in TableP:
+                Table_Pre[i] = (Preliminary.pop())
+            """桌面中階牌面洗牌"""
+            TableI = ["6", "8", "10"]
+            for i in TableI:
+                Table_Inter[i] = (Intermed.pop())
+            return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed,'Table_Source': Table_Source, 'Table_Pre': Table_Pre, 'Table_Inter': Table_Inter})
         if updTable != 0:
             updTable -= 1
         return jsonify({'resource':SourceAray,'Pre':Preliminary,'Inter':Intermed,'Table_Source': Table_Source, 'Table_Pre': Table_Pre, 'Table_Inter': Table_Inter,'User_Hand':usernum})
@@ -411,6 +464,17 @@ def info_ALL():
                     'Table_Inter_中階任務(桌面)': Table_Inter,
                     'AupdTable_(桌面同步更新-常駐為0)': updTable,
                     })
+
+#
+@app.route('/Card_info', methods=['GET'])
+def Card():
+
+    return render_template(f'Card_info.html')
+
+@app.route('/Card_info2', methods=['GET'])
+def Card2():
+
+    return render_template(f'Test1.html')
 if __name__ == "__main__":
 
     app.run(host='0.0.0.0',port=5000,debug=True)

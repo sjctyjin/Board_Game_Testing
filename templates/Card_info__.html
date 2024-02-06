@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>桌遊卡牌展示</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+.card {
+    width: 500px;
+    height: 800px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: white;
+    text-align: center;
+    background-image: url("static/Mission_Card.png");
+    /* background-image:url('static/main.jpg'); */
+    background-repeat: no-repeat; 
+    background-blend-mode: multiply;
+    background-position:center;
+    background-size:cover;
+}
+
+.card-header h2 {
+    margin: 0;
+    padding: 30px;
+    font-size: 5vmin;
+    color: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.card-image img {
+    width: 100%;
+    height: auto;
+    border-bottom: 1px solid #ddd;
+}
+
+.card-conditions, .card-description {
+    padding: 15px;
+    font-size: 2.8vmin;
+}
+.card-description{
+    position: relative;
+    bottom: 00px;
+    
+}
+/* .card-conditions p, .card-description p {
+    margin: 0;
+    margin-bottom: 10px;
+    padding: 20px;
+    opacity: 0.5;
+    background-color:antiquewhite;
+} */
+.container {
+    position: relative;
+    text-align: center;
+}
+
+.text-box {
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+    color: white; /* 文字顏色 */
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-align: left;
+}
+
+.text-box p {
+    margin: 0;
+    opacity: 1; /* 確保文字不透明 */
+}
+#sss{
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明背景 */
+    color: white; /* 文字顏色 */
+    padding: 40px 20px;
+    border-radius: 20px;
+    text-align: left;
+    background-image: url("static/rocket.png");
+    /* background-image:url('static/main.jpg'); */
+    background-repeat: no-repeat; 
+    background-blend-mode: multiply;
+    background-position:center;
+    background-size:cover;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h2>Meteosat</h2>
+        </div>
+        <div class="card-image">
+            <!-- 放置卡面圖案的位置 -->
+            <!-- <img src="card-image.jpg" alt="卡面圖案"> -->
+        </div>
+        <div class="card-conditions">
+            <div class="container">
+                <div class="text-box">
+                    <p>需求衛星 : 地球同步軌道衛星</p>
+                    <p>需求火箭 : 不鏽鋼、鋁合金、陶瓷</p>
+                    <p>需求燃料 : 12MJ</p>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <div class="container">
+                <div class="text-box" id="sss">
+                    <p>獲取技術 : 燃料精煉</p>
+                    <br/>
+                    <p>資源效果 : 
+                        燃料資源牌獲得+1
+                        </p>
+                </div>
+            </div>
+        </div>
+        <div class="card-description">
+     
+            <div class="container">
+                <div class="text-box">
+                    <p>Meteosat是歐洲氣象衛星組織（EUMETSAT）的一系列氣象衛星。它們提供全球氣象監測，用於收集大氣和地球表面的數據，包括雲層、氣象現象和海洋狀態。
+                        Meteosat的觀測資料對氣象預報、環境監測和氣候研究具有重要意義。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

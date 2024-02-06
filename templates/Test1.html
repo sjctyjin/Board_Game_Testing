@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mission Card</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.card {
+    width: 450px;
+    border: 5px solid #7f3fe7;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 750px;
+    /* background-color:#aa1c1c; */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    background-image: url("static/Mission_Card.png");
+    /* background-image:url('static/main.jpg'); */
+    background-repeat: no-repeat; 
+    background-blend-mode: multiply;
+    background-position:center;
+    background-size:cover;
+}
+
+.header {
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    border-bottom: 2px solid black;
+    font-size: 24px;
+    padding-top: 20px;
+    height: 0vh;
+    position: relative;
+}
+
+.headers {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    border-width:50px;
+    border-style: solid;
+    border-color: #000 transparent transparent transparent;
+    /* border-bottom: 100px solid red; */
+    border-left: 40px solid #3e16cc transparent;
+    border-right: 40px solid #3e16cc transparent;
+    height: 0vh;
+    width: 200px;
+    transform: translateX(-50%);
+}
+
+.content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* This defines the space between the boxes */
+}
+
+.box {
+    border: 0px solid black;
+    padding: 2px;
+    text-align: center;
+    /* background-color: #fff; */
+    opacity: 1;
+}
+p{
+    position: relative;
+    z-index: 999999;
+    top:-40px;
+    text-align: center;
+  color: #fff; 
+  font-weight: bold;
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* 更俏皮的字體 */
+}
+table p{
+    color: #000;
+    text-align: left;
+    font-size: 2vmin;
+    background-color: #fff;
+}
+table{
+    border: 8px solid rgb(40, 19, 136);
+    border-style:double;
+    border-radius: 10px;
+    padding: 5px;
+}
+table td{
+    font-weight: bold;
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* 更俏皮的字體 */
+    color: #000;
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 1px;
+    border: 0px solid;
+    border-radius: 10px;
+   
+    
+}
+tr{ 
+    background-color: rgba(218, 200, 195, 0.8);
+    border: 1px solid;
+    border-radius: 10px;
+}
+.wordspac{
+    width: 100%;
+    border-bottom: 3px solid rgb(22, 4, 4);
+    border-right: 3px solid rgb(22, 4, 4);
+    border-top: 3px solid rgb(22, 4, 4);
+}
+/* You can add additional styles here to match the exact design you need */
+.needico{
+    border-bottom: 3px solid rgb(22, 4, 4);
+    border-left: 3px solid rgb(22, 4, 4);
+    border-top: 3px solid rgb(22, 4, 4);
+}
+.know_needico{
+    border: 3px solid rgb(22, 4, 4);
+}
+.know_wordspac{
+    width: 100%;
+    border: 3px solid rgb(22, 4, 4);
+    
+}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <p>
+                Mission<br/>
+                METEOSAT
+            </p>
+            <div class="headers">
+                
+            </div>
+            
+            
+        </div>
+      
+
+        <div class="content">
+            <br/><br/><br/>
+
+            <div class="box">
+                <table>
+                    <tr>
+                        <td class="needico" rowspan="1"><img style="width: 60px;" src="static/stalite.png" /></td>
+                        <td class="wordspac">
+                            酬載<br/>
+                            地球同步軌道衛星
+                        </td>
+                    </tr>
+                  
+                   
+                    <tr>
+                        <td class="needico" rowspan="1"><img style="width:60px;" src="static/rocket.png" /></td>
+                        <td class="wordspac">
+                            箭體<br/>
+                            鋁合金、鈦合金
+                        </td>
+                   
+                    </tr>
+                    <tr>
+                        <td class="needico" rowspan="1"><img style="width: 60px;" src="static/oil.png" /></td>
+                        <td class="wordspac">
+                            燃料<br/>
+                            12MJ
+                        </td>
+                        
+                    </tr>
+                    
+                </table>
+               
+            </div>
+            <div class="box"> 
+                <table>
+                    <td class="needico" rowspan="1"><img style="width: 70px;" src="static/tech.png" /></td>
+
+                    <td class="wordspac">
+                        獲取技術 : <br/>
+                        燃料精煉
+                        資源效果 : <br/>
+                        燃料資源牌獲得+1      
+                    </td>
+                </table>
+                
+</div>
+            <div class="box">
+                <table>
+                    <tr>
+                        <td class="know_needico">
+                            <img style="width: 20px;" src="static/tips.png" />
+                        小知識
+                    </td>
+                    </tr>
+                    <tr>
+                        <td class="know_wordspac" >
+                            Meteosat是歐洲氣象衛星組織（EUMETSAT）的一系列氣象衛星。它們提供全球氣象監測，用於收集大氣和地球表面的數據，包括雲層、氣象現象和海洋狀態。
+                            Meteosat的觀測資料對氣象預報、環境監測和氣候研究具有重要意義。
+    
+                        </td>
+                    </tr>
+                    
+                    
+                </table>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
